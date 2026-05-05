@@ -1,6 +1,25 @@
-import './assets/main.css'
+import { createApp } from "vue";
+import { createRouter, createMemoryHistory } from "vue-router";
+import Inaki from "./views/Inaki.vue";
+import Lauti from "./views/Lauti.vue";
 
-import { createApp } from 'vue'
-import App from './App.vue'
 
-createApp(App).mount('#app')
+const routes = [
+  {
+    path: "/Inaki",
+    component: Inaki
+  },
+  {
+    path: "/Lauti",
+    component: Lauti
+  }
+];
+
+const router = createRouter({
+  history: createMemoryHistory(),
+  routes
+});    
+
+const app = createApp({});
+app.use(router);
+app.mount("#app");
