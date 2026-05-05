@@ -2,7 +2,7 @@ import { createApp } from "vue";
 import { createRouter, createMemoryHistory } from "vue-router";
 import Inaki from "./views/Inaki.vue";
 import Lauti from "./views/Lauti.vue";
-
+import App from "./App.vue";
 
 const routes = [
   {
@@ -20,6 +20,6 @@ const router = createRouter({
   routes
 });    
 
-const app = createApp({});
+const app = createApp(App);
 app.use(router);
 app.mount("#app");
