@@ -1,17 +1,17 @@
 import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
-import Inaki from "./views/Inaki.vue";
-import Lauti from "./views/Lauti.vue";
+import home from "./views/AppHome.vue";
+import productos from "./views/AppProductos.vue";
 import App from "./App.vue";
 
 const routes = [
   {
-    path: "/Inaki",
-    component: Inaki
+    path: "/",
+    component: home
   },
   {
-    path: "/Lauti",
-    component: Lauti
+    path: "/Productos",
+    component: productos
   }
 ];
 
