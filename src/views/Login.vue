@@ -1,14 +1,32 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { authService } from '../services/authService'
+import { useAuthStore } from '../stores/authStore'
 
 const usuario = ref('')
 const contrasenia = ref('')
+const errorMsg = ref('')
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 function manejarLogin() {
+  errorMsg.value = ''
+  
   if (usuario.value !== '' && contrasenia.value !== '') {
-    alert(`Intentando iniciar sesión con el usuario: ${usuario.value}`)
+    
+    const datoUsuario = authService.login(usuario.value, contrasenia.value)
+    
+    if (datoUsuario) {
+      authStore.setUsuario(datoUsuario)
+      router.push('/home')
+    } else {
+      errorMsg.value = 'Credenciales inválidas. Revise usuario o clave.'
+    }
+
   } else {
-    alert('Por favor, completa todos los campos.')
+    errorMsg.value = 'Por favor, complete todos los campos.'
   }
 }
 </script>
@@ -16,7 +34,7 @@ function manejarLogin() {
 <template>
   <div>
     <h1>Ingreso al Sistema Mayorista</h1>
-    <p>Introduce tus credenciales para operar en la distribuidora.</p>
+    <p>Introduce tus credenciales para ingresar a la distribuidora.</p>
     <form @submit.prevent="manejarLogin">
       <div>
         <label>Usuario (o Email): </label>
@@ -27,7 +45,7 @@ function manejarLogin() {
         />
       </div>
 
-      <br />
+      <br>
 
       <div>
         <label>Contraseña: </label>
@@ -38,9 +56,12 @@ function manejarLogin() {
         />
       </div>
 
-      <br />
+      <br>
 
       <button type="submit">Iniciar Sesión</button>
+      <p v-if="errorMsg">
+        {{ errorMsg }}
+      </p>
     </form>
   </div>
 </template>
