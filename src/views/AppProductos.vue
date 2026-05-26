@@ -2,6 +2,10 @@
 
 import { ref, computed, onMounted } from "vue"
 
+import { useStoreCarrito } from "../stores/storeCarrito"
+
+const storeCarrito = useStoreCarrito()
+
 const productos = ref([])
 
 const busqueda = ref("")
@@ -32,21 +36,18 @@ const categorias = computed(() => {
 })
 
 const productosFiltrados = computed(() => {
+if (categoriaSeleccionada.value === "Todos" && busqueda.value === ""  ) return productos.value
 
   return productos.value.filter(producto => {
 
-    const coincideBusqueda =
-      producto.nombre
-        .toLowerCase()
-        .includes(busqueda.value.toLowerCase()) || producto.categoria
-        .toLowerCase()        .includes(busqueda.value.toLowerCase())
+   const coincideBusqueda =
 
-    const coincideCategoria =
-      categoriaSeleccionada.value === "Todos"
-      ||
-      producto.categoria === categoriaSeleccionada.value
+  producto.nombre.toLowerCase().includes(busqueda.value)||
+    producto.categoria.toLowerCase().includes(busqueda.value)
 
-    return coincideBusqueda && coincideCategoria
+  const coincideCategoria = categoriaSeleccionada.value === "Todos" || producto.categoria === categoriaSeleccionada.value
+
+  return coincideBusqueda && coincideCategoria
 
   })
 
@@ -101,7 +102,11 @@ const productosFiltrados = computed(() => {
         <strong>
           ${{ producto.precio }}
         </strong>
-
+        
+        <button @click="storeCarrito.agregarAlCarrito(producto)">
+          🛒 Agregar al carrito
+        </button>
+        
       </div>
 
     </div>
