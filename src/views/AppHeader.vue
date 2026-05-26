@@ -1,11 +1,13 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
 import { computed } from 'vue'
+import { useAuthStore } from '../stores/authStore'
 import { useStoreCarrito } from "../stores/storeCarrito"
 
 const storeCarrito = useStoreCarrito();
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 
 const path = computed(() => route.path);
 
@@ -24,17 +26,7 @@ const goProductos = () => {
 </script>
 
 <template>
-  <div>
-    <button @click="goHome" :disabled="isActHome">
-        🏠 Inicio
-    </button>
-    <button @click="goProductos" :disabled="isActProductos">
-        📦 Productos
-    </button>
-  </div>
-    <div>
-      <p>
-      🛒 Carrito {{ storeCarrito.getCantidadTotal}}
-    </p>
-  </div>
+  <button @click="goHome" :disabled="!isActive">
+    🏠 Inicio
+  </button>
 </template>
