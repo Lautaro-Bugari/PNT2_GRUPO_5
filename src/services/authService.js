@@ -1,18 +1,20 @@
-import { u } from "vue-router/dist/useApi-D6ckOsFy.js";
+import { ref } from "vue"
 
-const USUARIOS_REGISTRADOS = [
-  { email: "kiosko@gmail.com", password: "123456", nombre: "Kiosco123" },
-];
+const users = ref([])
+
+const URL ="https://6a14f50691ff9a63de0731e9.mockapi.io/api/users"
 
 export const authService = {
-    login(email, password) {
-        const usuarioEncontrado = USUARIOS_REGISTRADOS.find(
-            (usuario) => usuario.email === email && usuario.password === password
-        );
-        let resultado = null;
-        if (usuarioEncontrado) {
-            resultado = { email: usuarioEncontrado.email, nombre: usuarioEncontrado.nombre };
-        }
-        return resultado;
+  async login(username, password) {
+    const response = await fetch(URL)
+    const data = await response.json()
+    users.value = data
+
+    const user = users.value.find(u => (u.username === username || u.email === username) && u.password === password)
+    if (user) {
+      return user
+    } else {
+      throw new Error('Usuario o contraseña incorrectos.')
     }
+  }
 }

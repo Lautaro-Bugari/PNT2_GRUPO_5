@@ -1,32 +1,55 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
 import { computed } from 'vue'
-import { useAuthStore } from '../stores/authStore'
 import { useStoreCarrito } from "../stores/storeCarrito"
+import { useAuthStore } from '../stores/authStore';
 
 const storeCarrito = useStoreCarrito();
+const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
-const authStore = useAuthStore();
 
 const path = computed(() => route.path);
 
 const isActHome = computed(() => path.value === '/');
-const isActProductos = computed(() => path.value === '/Productos');
+const isActProductos = computed(() => path.value === '/productos');
 
 const goHome = () => {
   router.push('/');
 };
 
 const goProductos = () => {
-    router.push('/Productos');
+    router.push('/productos');
 };
 
 
 </script>
 
 <template>
-  <button @click="goHome" :disabled="!isActive">
-    🏠 Inicio
-  </button>
+  <div>
+    <button @click="goHome" :disabled="isActHome">
+        🏠 Inicio
+    </button>
+    <button @click="goProductos" :disabled="isActProductos">
+        📦 Productos
+    </button>
+  </div>
+    <div>
+      <p>
+      🛒 Carrito {{ storeCarrito.getCantidadTotal}}
+    </p>
+    </div>
+    <div>
+      <p v-if="authStore.usuarioLogueado !== null">
+        {{ authStore.usuarioLogueado.nombre }}
+        <img :src="authStore.usuarioLogueado.avatar" width="50"
+/>
+      </p>
+      <button v-if="authStore.usuarioLogueado !== null" @click="authStore.logout">
+        🚪 Cerrar sesión
+      </button>
+    <button v-else @click="router.push({path:'/login',query:{redirect: route.path}})">
+        🔑 Iniciar sesión
+      </button>
+    </div>
 </template>

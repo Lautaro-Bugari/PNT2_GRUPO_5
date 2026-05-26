@@ -1,33 +1,35 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { authService } from '../services/authService'
 import { useAuthStore } from '../stores/authStore'
 
 const usuario = ref('')
 const contrasenia = ref('')
+const route = useRoute()
 const errorMsg = ref('')
-
 const router = useRouter()
 const authStore = useAuthStore()
+const estaTrabajando = ref(false)
 
-function manejarLogin() {
-  errorMsg.value = ''
-  
-  if (usuario.value !== '' && contrasenia.value !== '') {
-    
-    const datoUsuario = authService.login(usuario.value, contrasenia.value)
-    
-    if (datoUsuario) {
-      authStore.setUsuario(datoUsuario)
-      router.push('/home')
-    } else {
-      errorMsg.value = 'Credenciales inválidas. Revise usuario o clave.'
+const formularioCompleto = computed(() => {
+  return ( usuario.value.trim() !== '' && contrasenia.value.trim() !== '' )
+})
+
+async function manejarLogin() {
+  estaTrabajando.value = true
+  let datoUsuario
+    try {
+      datoUsuario =await authService.login(usuario.value.trim(), contrasenia.value.trim())
     }
-
-  } else {
-    errorMsg.value = 'Por favor, complete todos los campos.'
-  }
+    catch (error) {
+      errorMsg.value ='Usuario o contraseña incorrectos.'
+      estaTrabajando.value = false
+      return
+    }
+      authStore.setUsuario(datoUsuario)
+      router.push(route.query.redirect || '/')
+      estaTrabajando.value = false
 }
 </script>
 
@@ -40,6 +42,8 @@ function manejarLogin() {
         <label>Usuario (o Email): </label>
         <input 
           v-model="usuario" 
+          :disabled="estaTrabajando"
+          @input="errorMsg = ''"
           type="text" 
           placeholder="Ej: kiosko@gmail.com" 
         />
@@ -51,6 +55,8 @@ function manejarLogin() {
         <label>Contraseña: </label>
         <input 
           v-model="contrasenia" 
+          :disabled="estaTrabajando"
+          @input="errorMsg = ''"
           type="password" 
           placeholder="••••••••" 
         />
@@ -58,7 +64,9 @@ function manejarLogin() {
 
       <br>
 
-      <button type="submit">Iniciar Sesión</button>
+      <button type="submit" :disabled="!formularioCompleto || estaTrabajando">
+        {{ estaTrabajando ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+      </button>
       <p v-if="errorMsg">
         {{ errorMsg }}
       </p>

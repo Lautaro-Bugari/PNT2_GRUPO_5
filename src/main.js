@@ -5,7 +5,6 @@ import home from "./views/AppHome.vue";
 import productos from "./views/AppProductos.vue";
 import App from "./App.vue";
 import Login from "./views/Login.vue";
-import { createPinia } from "pinia";
 
 const routes = [
   {
@@ -31,6 +30,3 @@ const app = createApp(App);
 app.use(router);
 app.use(createPinia());
 app.mount("#app");
-
-const pinia = createPinia();
-app.use(pinia);
