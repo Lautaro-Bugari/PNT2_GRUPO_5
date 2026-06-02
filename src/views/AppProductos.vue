@@ -4,16 +4,29 @@ import { ref, computed, onMounted } from "vue"
 
 import { useStoreCarrito } from "../stores/storeCarrito"
 
+import AvisoLogin from "./AvisoLogin.vue"
+
+import { useAuthStore } from '../stores/authStore'
+
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const authStore = useAuthStore()
 const storeCarrito = useStoreCarrito()
 
 const productos = ref([])
 
 const busqueda = ref("")
 
+const avisoLoginVisible = ref(false)
+
+let idProductoSeleccionado = null
+
+
 const categoriaSeleccionada = ref("Todos")
 
-const url =
-"https://www.mockachino.com/5f72124b-0201-4d/api/productos"
+const url ="https://www.mockachino.com/5f72124b-0201-4d/api/productos"
 
 onMounted(async () => {
 
@@ -50,8 +63,16 @@ if (categoriaSeleccionada.value === "Todos" && busqueda.value === ""  ) return p
   return coincideBusqueda && coincideCategoria
 
   })
-
 })
+
+const verificarLogin = (producto) => {
+  if (!authStore.usuarioLogueado) {
+    idProductoSeleccionado = producto.id
+    avisoLoginVisible.value = true
+    return
+  } 
+    storeCarrito.agregarAlCarrito(producto)
+}
 
 </script>
 
@@ -61,14 +82,10 @@ if (categoriaSeleccionada.value === "Todos" && busqueda.value === ""  ) return p
 
     <h1>Productos</h1>
 
-    <!-- BUSCADOR -->
-
     <input
       v-model="busqueda"
       placeholder="Buscar producto..."
     >
-
-    <!-- FILTRO -->
 
     <select v-model="categoriaSeleccionada">
 
@@ -82,6 +99,23 @@ if (categoriaSeleccionada.value === "Todos" && busqueda.value === ""  ) return p
     </select>
 
     <!-- PRODUCTOS -->
+
+    <AvisoLogin v-if="avisoLoginVisible"
+ @cerrar="
+    avisoLoginVisible = false
+  "
+
+  @login="
+    router.push({
+      path: '/login',
+      query: {
+        redirect:
+          `/productos/${idProductoSeleccionado}`
+      }
+    })
+  "
+
+/>
 
     <div >
 
@@ -103,7 +137,7 @@ if (categoriaSeleccionada.value === "Todos" && busqueda.value === ""  ) return p
           ${{ producto.precio }}
         </strong>
         
-        <button @click="storeCarrito.agregarAlCarrito(producto)">
+        <button @click="verificarLogin(producto)">
           🛒 Agregar al carrito
         </button>
         
