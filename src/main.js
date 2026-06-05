@@ -5,6 +5,8 @@ import home from "./views/AppHome.vue";
 import productos from "./views/AppProductos.vue";
 import App from "./App.vue";
 import Login from "./views/Login.vue";
+import Checkout from "./views/Checkout.vue";
+import Confirmacion from "./views/Confirmacion.vue";
 
 const routes = [
   {
@@ -18,6 +20,14 @@ const routes = [
   {
     path: "/login",    
     component: Login
+  },
+  {
+    path: "/checkout",
+    component: Checkout
+  },
+  {
+    path: "/pedido/:idPedido",
+    component: Confirmacion
   }
 ];
 
