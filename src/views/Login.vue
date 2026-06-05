@@ -13,14 +13,14 @@ const authStore = useAuthStore()
 const estaTrabajando = ref(false)
 
 const formularioCompleto = computed(() => {
-  return ( usuario.value() !== '' && contrasenia.value() !== '' )
+  return ( usuario.value !== '' && contrasenia.value !== '' )
 })
 
 async function manejarLogin() {
   estaTrabajando.value = true
   let datoUsuario
     try {
-      datoUsuario =await authService.login(usuario.value(), contrasenia.value())
+      datoUsuario =await authService.login(usuario.value, contrasenia.value)
     }
     catch (error) {
       errorMsg.value ='Usuario o contraseña incorrectos.'

@@ -35,9 +35,9 @@ const goProductos = () => {
     </button>
   </div>
     <div>
-      <p>
-      🛒 Carrito {{ storeCarrito.getCantidadTotal}}
-    </p>
+      <button @click="router.push('/checkout')" :disabled="route.path === '/checkout'">
+        🛒 Carrito {{ storeCarrito.getCantidadTotal }}
+      </button>
     </div>
     <div>
       <p v-if="authStore.usuarioLogueado !== null">
