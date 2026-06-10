@@ -63,25 +63,18 @@ const irAlCatalogo = () => {
   </div>
 </template>
 
-<style>
-.body{
-  font-family: 'Segoe UI', Roboto, sans-serif;
-  margin: 0;
-  padding: 0;
-}
-
+<style scoped>
 .banner-foto {
   background-image: url('/imagenes/banner.jpg');
   background-size: cover;
   background-position: center;
-  margin: 0px;
   margin-top: 100px;
   padding: 300px 20px;
   text-align: center;
 }
 
 .banner-texto {
-display: flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
 }
@@ -95,19 +88,19 @@ display: flex;
   backdrop-filter: blur(8px);
   border-radius: 15px;
   padding: 20px 40px;
+  margin: -100px 0 100px 0;
   display: inline-block
 }
 
 .banner-texto p {
   color: #ffffff;
   font-size: 30px;
-  margin: 0;
   text-shadow: 3px 3px 6px rgba(223, 13, 13, 0.9);
   background-color: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(8px);
   border-radius: 15px;
   padding: 20px 40px;
+  margin: 0;
   display: inline-block
 }
-
 </style>
