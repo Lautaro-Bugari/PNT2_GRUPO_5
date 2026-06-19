@@ -170,12 +170,10 @@ const agregarAlCarrito = async () => {
   {{ agregando ? "Agregando..." : "Agregar al carrito" }}
 </button>
 
-<!-- Debe estar inmediatamente después del v-if anterior -->
 <button v-else class="btn btn-sin-stock" disabled>
   Sin stock disponible
 </button>
 
-<!-- El mensaje va después de los dos botones -->
 <div v-if="mensajeAgregado" class="mensaje-agregado">
   ✅ ¡{{ cantidad }} bulto{{ cantidad > 1 ? "s" : "" }}
   agregado{{ cantidad > 1 ? "s" : "" }} al carrito!
