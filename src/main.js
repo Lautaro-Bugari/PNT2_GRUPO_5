@@ -7,6 +7,8 @@ import App from "./App.vue";
 import Login from "./views/Login.vue";
 import Checkout from "./views/Checkout.vue";
 import Confirmacion from "./views/Confirmacion.vue";
+import DetalleProducto from "./views/DetalleProducto.vue";
+import Carrito from "./views/Carrito.vue";
 
 const routes = [
   {
@@ -16,6 +18,14 @@ const routes = [
   {
     path: "/productos",
     component: productos
+  },
+  {
+    path: "/productos/:id",
+    component: DetalleProducto
+  },
+  {
+    path: "/carrito",
+    component: Carrito
   },
   {
     path: "/login",    

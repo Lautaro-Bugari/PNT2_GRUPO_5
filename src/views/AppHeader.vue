@@ -35,7 +35,7 @@ const goProductos = () => {
     </button>
   </div>
     <div>
-      <button @click="router.push('/checkout')" :disabled="route.path === '/checkout'">
+      <button @click="router.push('/carrito')" :disabled="route.path === '/carrito'">
         🛒 Carrito {{ storeCarrito.getCantidadTotal }}
       </button>
     </div>

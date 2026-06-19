@@ -8,16 +8,18 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
   const carrito = ref([])
   const carritoId = ref(null)
 
-  const agregarAlCarrito = async (producto) => {
+  const agregarAlCarrito = async (producto, cantidad = 1) => {
+
+    const cantidadValida = Math.max(1, Number(cantidad) || 1)
 
     const itemCarrito = carrito.value.find(
       i => i.id === producto.id
     )
 
     if (itemCarrito) {
-      itemCarrito.cantidad++
-        await guardarCarrito()
-        return
+      itemCarrito.cantidad += cantidadValida
+      await guardarCarrito()
+      return
     }
 
 
@@ -27,8 +29,27 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
   nombre: producto.nombre,
   precio: producto.precio,
   imagen: producto.imagen,
-  cantidad: 1
+  cantidad: cantidadValida
 })
+    await guardarCarrito()
+  }
+
+  const cambiarCantidad = async (productoId, cantidad) => {
+    const itemCarrito = carrito.value.find(i => i.id === productoId)
+    if (!itemCarrito) return
+
+    const nuevaCantidad = Number(cantidad)
+    if (nuevaCantidad < 1) {
+      await eliminarDelCarrito(productoId)
+      return
+    }
+
+    itemCarrito.cantidad = nuevaCantidad
+    await guardarCarrito()
+  }
+
+  const eliminarDelCarrito = async (productoId) => {
+    carrito.value = carrito.value.filter(i => i.id !== productoId)
     await guardarCarrito()
   }
 
@@ -36,7 +57,7 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
 
     if (!carritoId.value) return
 
-    await fetch(`${url}/${carritoId.value}`, {
+    const response = await fetch(`${url}/${carritoId.value}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -45,10 +66,14 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
         itemsProductos: carrito.value
       })
     })
+
+    if (!response.ok) {
+      throw new Error("No se pudo guardar el carrito")
+    }
   }
 
   const setCarrito = (nuevoCarrito, id) => {
-    carrito.value = nuevoCarrito
+    carrito.value = Array.isArray(nuevoCarrito) ? nuevoCarrito : []
     carritoId.value = id
   }
 
@@ -56,7 +81,12 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
     carritoId.value = id
   }
 
-  const vaciarCarrito = () => {
+  const vaciarCarrito = async () => {
+    carrito.value = []
+    await guardarCarrito()
+  }
+
+  const limpiarSesion = () => {
     carrito.value = []
     carritoId.value = null
   }
@@ -74,10 +104,13 @@ return {
   carrito,
   carritoId,
   agregarAlCarrito,
+  cambiarCantidad,
+  eliminarDelCarrito,
   guardarCarrito,
   setCarrito,
   setCarritoId,
   vaciarCarrito,
+  limpiarSesion,
   getCantidadTotal
 
 }

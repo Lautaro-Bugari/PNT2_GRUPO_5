@@ -45,7 +45,7 @@ defineStore('auth', {
 
     async logout() {
       const storeCarrito = useStoreCarrito()
-      storeCarrito.vaciarCarrito()
+      storeCarrito.limpiarSesion()
 
       this.usuarioLogueado = null
 
