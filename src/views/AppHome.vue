@@ -1,39 +1,91 @@
 <script setup>
 import { ref, onMounted } from "vue"
-import { useRouter } from "vue-router"
+import { useStoreProducto } from "../stores/storeProducto"
+import { useStorePromos } from "../stores/storePromos"
+import AvisoLogin from "./AvisoLogin.vue"
+import { useAuthStore } from '../stores/authStore'
+import { useStoreCarrito } from "../stores/storeCarrito"
+import { useRouter } from 'vue-router'
 
-const ofertas = ref([])
+
+const promos = ref([])
 const novedades = ref([])
+const storeProducto = useStoreProducto()
+const storePromos = useStorePromos()
+const avisoLoginVisible = ref(false)
+const authStore = useAuthStore()
+const storeCarrito = useStoreCarrito()
 const router = useRouter()
 
-const url =
-"https://www.mockachino.com/5f72124b-0201-4d/api/home"
-
 onMounted(async () => {
-
-  const response = await fetch(url)
-
-  const data = await response.json()
-
-  ofertas.value = data.ofertas
-
-  novedades.value = data.novedades
+  await storePromos.actualizarPromociones()
+  promos.value = await storePromos.getPromociones()
+  const productosObtenidos = await storeProducto.getProductos()
+  const hoy = new Date()
+  novedades.value = productosObtenidos.filter(p => {
+    const fechaP = new Date(p.fechaIngreso)
+    return fechaP.getMonth() === hoy.getMonth() && fechaP.getFullYear() === hoy.getFullYear()
+  })
 })
 
-const irAlCatalogo = () => {
-  router.push('/productos')
+const verificarLogin = (producto) => {
+  if (!authStore.usuarioLogueado) {
+    idProductoSeleccionado = producto.id
+    avisoLoginVisible.value = true
+    return
+  } 
+    storeCarrito.agregarAlCarrito(producto)
 }
 </script>
 
 
 <template>
-  <div class="body">
-    
-    <div class="banner-foto">
-      <div class="banner-texto">
-        <h1>La Central de las Golosinas</h1>
-        <p>Somos tu proveedor confiable de productos para kioskos. Ofrecemos una amplia variedad de productos de alta calidad a precios competitivos.</p>
-      </div>
+
+  <div>
+        <AvisoLogin v-if="avisoLoginVisible"
+ @cerrar="
+    avisoLoginVisible = false
+  "
+
+  @login="
+    router.push({
+      path: '/login',
+      query: {
+        redirect:
+          `/productos/${idProductoSeleccionado}`
+      }
+    })
+  "
+
+/>
+</div>
+
+  <div>
+    <header>
+      <h1>Bienvenido a la Distribuidora Kioskos</h1>
+    </header>
+    <div>
+      <p>Somos tu proveedor confiable de productos para kioskos. Ofrecemos una amplia variedad de productos de alta calidad a precios competitivos.</p>
+      <p>Explora nuestro catálogo y descubre todo lo que tenemos para ofrecerte. ¡Gracias por elegirnos!</p>
+    </div>
+    <h2>Ofertas</h2>
+
+    <div
+      v-for="promocion in promos"
+      :key="promocion.id"
+    >
+      <img
+        :src="promocion.imagen"
+        width="400"
+      >
+
+      <h3>{{ promocion.name }}</h3>
+
+      <p>Precio: ${{ promocion.precio }}</p>
+
+            <button @click="verificarLogin(promocion)">
+          🛒 Agregar al carrito
+        </button>
     </div>
 
     <div class="bloque-seccion">
@@ -48,19 +100,14 @@ const irAlCatalogo = () => {
       </div>
     </div>
 
-    <div class="bloque-seccion">
-      <h2 class="titulo-seccion">Novedades</h2>
+      <h3>{{ novedad.name }}</h3>
 
-      <div class="lista-productos">
-        <div v-for="novedad in novedades" :key="novedad.id" class="tarjeta-individual">
-          <img :src="novedad.imagen" class="imagen-producto">
-          <h3 class="titulo-producto">{{ novedad.titulo }}</h3>
-          <p class="descripcion-producto">{{ novedad.descripcion }}</p>
-        </div>
-      </div>
+      <p>Precio: ${{ novedad.precio }}</p>
+
+            <button @click="verificarLogin(novedad)">
+          🛒 Agregar al carrito
+        </button>
     </div>
-
-  </div>
 </template>
 
 <style scoped>

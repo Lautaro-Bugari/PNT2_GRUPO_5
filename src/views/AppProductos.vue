@@ -10,6 +10,10 @@ import { useAuthStore } from '../stores/authStore'
 
 import { useRouter } from 'vue-router'
 
+import { useStoreProducto } from "../stores/storeProducto"
+
+const storeProducto = useStoreProducto()
+
 const router = useRouter()
 
 const authStore = useAuthStore()
@@ -26,27 +30,14 @@ let idProductoSeleccionado = null
 
 const categoriaSeleccionada = ref("Todos")
 
-const url ="https://www.mockachino.com/5f72124b-0201-4d/api/productos"
 
 onMounted(async () => {
-
-  const response = await fetch(url)
-
-  const data = await response.json()
-
-  productos.value = data.productos
-
+  const productosObtenidos = await storeProducto.getProductos()
+  productos.value = productosObtenidos.filter(p => p.cantStock > 0)
 })
 
-const categorias = computed(() => {
-
-  const lista = productos.value.map(
-    producto => producto.categoria
-  )
-
-  return ["Todos", ...new Set(lista)]
-
-})
+const categorias = computed(() => { const lista = productos.value.map(producto => producto.categoria)
+  return ["Todos", ...new Set(lista)]})
 
 const productosFiltrados = computed(() => {
 if (categoriaSeleccionada.value === "Todos" && busqueda.value === ""  ) return productos.value
