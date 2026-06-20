@@ -1,27 +1,65 @@
 <script setup>
 import { ref, onMounted } from "vue"
+import { useStoreProducto } from "../stores/storeProducto"
+import { useStorePromos } from "../stores/storePromos"
+import AvisoLogin from "./AvisoLogin.vue"
+import { useAuthStore } from '../stores/authStore'
+import { useStoreCarrito } from "../stores/storeCarrito"
+import { useRouter } from 'vue-router'
 
-const ofertas = ref([])
+
+const promos = ref([])
 const novedades = ref([])
-
-const url =
-"https://www.mockachino.com/5f72124b-0201-4d/api/home"
+const storeProducto = useStoreProducto()
+const storePromos = useStorePromos()
+const avisoLoginVisible = ref(false)
+const authStore = useAuthStore()
+const storeCarrito = useStoreCarrito()
+const router = useRouter()
 
 onMounted(async () => {
-
-  const response = await fetch(url)
-
-  const data = await response.json()
-
-  ofertas.value = data.ofertas
-
-  novedades.value = data.novedades
+  await storePromos.actualizarPromociones()
+  promos.value = await storePromos.getPromociones()
+  const productosObtenidos = await storeProducto.getProductos()
+  const hoy = new Date()
+  novedades.value = productosObtenidos.filter(p => {
+    const fechaP = new Date(p.fechaIngreso)
+    return fechaP.getMonth() === hoy.getMonth() && fechaP.getFullYear() === hoy.getFullYear()
+  })
 })
 
+const verificarLogin = (producto) => {
+  if (!authStore.usuarioLogueado) {
+    idProductoSeleccionado = producto.id
+    avisoLoginVisible.value = true
+    return
+  } 
+    storeCarrito.agregarAlCarrito(producto)
+}
 </script>
 
 
 <template>
+
+  <div>
+        <AvisoLogin v-if="avisoLoginVisible"
+ @cerrar="
+    avisoLoginVisible = false
+  "
+
+  @login="
+    router.push({
+      path: '/login',
+      query: {
+        redirect:
+          `/productos/${idProductoSeleccionado}`
+      }
+    })
+  "
+
+/>
+</div>
+
   <div>
     <header>
       <h1>Bienvenido a la Distribuidora Kioskos</h1>
@@ -33,17 +71,21 @@ onMounted(async () => {
     <h2>Ofertas</h2>
 
     <div
-      v-for="oferta in ofertas"
-      :key="oferta.id"
+      v-for="promocion in promos"
+      :key="promocion.id"
     >
       <img
-        :src="oferta.imagen"
+        :src="promocion.imagen"
         width="400"
       >
 
-      <h3>{{ oferta.titulo }}</h3>
+      <h3>{{ promocion.name }}</h3>
 
-      <p>{{ oferta.descripcion }}</p>
+      <p>Precio: ${{ promocion.precio }}</p>
+
+            <button @click="verificarLogin(promocion)">
+          🛒 Agregar al carrito
+        </button>
     </div>
 
     <h2>Novedades</h2>
@@ -57,9 +99,13 @@ onMounted(async () => {
         width="400"
       >
 
-      <h3>{{ novedad.titulo }}</h3>
+      <h3>{{ novedad.name }}</h3>
 
-      <p>{{ novedad.descripcion }}</p>
+      <p>Precio: ${{ novedad.precio }}</p>
+
+            <button @click="verificarLogin(novedad)">
+          🛒 Agregar al carrito
+        </button>
     </div>
 
   </div>
