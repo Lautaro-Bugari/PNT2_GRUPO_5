@@ -7,58 +7,59 @@ import { useAuthStore } from '../stores/authStore'
 import { useStoreCarrito } from "../stores/storeCarrito"
 import { useRouter } from 'vue-router'
 
-
 const promos = ref([])
 const novedades = ref([])
 const storeProducto = useStoreProducto()
 const storePromos = useStorePromos()
 const avisoLoginVisible = ref(false)
+const ProductoSeleccionado = ref(null) 
 const authStore = useAuthStore()
 const storeCarrito = useStoreCarrito()
 const router = useRouter()
 
 onMounted(async () => {
-  await storePromos.actualizarPromociones()
-  promos.value = await storePromos.getPromociones()
-  const productosObtenidos = await storeProducto.getProductos()
-  const hoy = new Date()
-  novedades.value = productosObtenidos.filter(p => {
-    const fechaP = new Date(p.fechaIngreso)
-    return fechaP.getMonth() === hoy.getMonth() && fechaP.getFullYear() === hoy.getFullYear()
-  })
+  try {
+
+    promos.value = await storePromos.getPromociones()
+
+    const productosObtenidos = await storeProducto.getProductos()
+    const hoy = new Date()
+    novedades.value = productosObtenidos.filter(p => {
+      const fechaP = new Date(p.fechaSalida)
+      return fechaP.getMonth() === hoy.getMonth() && 
+        fechaP.getFullYear() === hoy.getFullYear()
+    })
+  } catch (error) {
+    console.error("Error al cargar datos iniciales:", error)
+  }
 })
 
 const verificarLogin = (producto) => {
   if (!authStore.usuarioLogueado) {
-    idProductoSeleccionado = producto.id
+    ProductoSeleccionado.value = producto
     avisoLoginVisible.value = true
     return
-  } 
-    storeCarrito.agregarAlCarrito(producto)
+  }
+  storeCarrito.agregarAlCarrito(producto)
 }
 </script>
 
-
 <template>
-
   <div>
-        <AvisoLogin v-if="avisoLoginVisible"
- @cerrar="
-    avisoLoginVisible = false
-  "
-
-  @login="
-    router.push({
-      path: '/login',
-      query: {
-        redirect:
-          `/productos/${idProductoSeleccionado}`
-      }
-    })
-  "
-
-/>
-</div>
+    <AvisoLogin 
+      v-if="avisoLoginVisible"
+      @cerrar="avisoLoginVisible = false"
+      @login="
+        const ruta = productoSeleccionado?.productosIncluidos || productoSeleccionado?.categorias
+          ? `/promociones/${productoSeleccionado.id}`
+          : `/productos/${productoSeleccionado.id}`;
+        router.push({
+          path: '/login',
+          query: { redirect: ruta }
+        });
+        "
+    />
+  </div>
 
   <div>
     <header>
@@ -68,45 +69,29 @@ const verificarLogin = (producto) => {
       <p>Somos tu proveedor confiable de productos para kioskos. Ofrecemos una amplia variedad de productos de alta calidad a precios competitivos.</p>
       <p>Explora nuestro catálogo y descubre todo lo que tenemos para ofrecerte. ¡Gracias por elegirnos!</p>
     </div>
+
     <h2>Ofertas</h2>
-
-    <div
-      v-for="promocion in promos"
-      :key="promocion.id"
-    >
-      <img
-        :src="promocion.imagen"
+    <div v-for="promocion in promos" :key="promocion.id">
+      <img 
+        :src="promocion.imagen || 'https://via.placeholder.com/400'"
         width="400"
+        alt="Imagen de promoción"
       >
-
-      <h3>{{ promocion.name }}</h3>
-
+      <h3>{{ promocion.nombre }}</h3>
       <p>Precio: ${{ promocion.precio }}</p>
-
-            <button @click="verificarLogin(promocion)">
-          🛒 Agregar al carrito
-        </button>
+      <button @click="verificarLogin(promocion)">🛒 Agregar al carrito</button>
     </div>
 
     <h2>Novedades</h2>
-
-    <div
-      v-for="novedad in novedades"
-      :key="novedad.id"
-    >
-      <img
-        :src="novedad.imagen"
+    <div v-for="novedad in novedades" :key="novedad.id">
+      <img 
+        :src="novedad.imagen || 'https://via.placeholder.com/400'"
         width="400"
+        alt="Imagen de producto"
       >
-
-      <h3>{{ novedad.name }}</h3>
-
+      <h3>{{ novedad.nombre }}</h3>
       <p>Precio: ${{ novedad.precio }}</p>
-
-            <button @click="verificarLogin(novedad)">
-          🛒 Agregar al carrito
-        </button>
+      <button @click="verificarLogin(novedad)">🛒 Agregar al carrito</button>
     </div>
-
   </div>
 </template>
