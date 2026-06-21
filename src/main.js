@@ -7,6 +7,7 @@ import App from "./App.vue";
 import Login from "./views/Login.vue";
 import Checkout from "./views/Checkout.vue";
 import Confirmacion from "./views/Confirmacion.vue";
+import Admin from "./views/AdminUsuarios.vue";
 
 const routes = [
   {
@@ -28,6 +29,10 @@ const routes = [
   {
     path: "/pedido/:idPedido",
     component: Confirmacion
+  },
+  {
+    path: "/admin/usuarios",
+    component: Admin
   }
 ];
 
