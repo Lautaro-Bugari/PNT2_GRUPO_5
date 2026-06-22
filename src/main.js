@@ -44,7 +44,6 @@ const routes = [
     path: "/producto/:productoId",
     component: ProductoDetalle
   },
-
 ];
 
 const router = createRouter({

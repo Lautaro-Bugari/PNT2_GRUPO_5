@@ -73,10 +73,10 @@ const irALogin = () => {
       <h1>{{ promocion.nombre }}</h1>
       <p><strong>Descripción:</strong> {{ promocion.descripcion }}</p>
       <p><strong>Precio original:</strong> ${{ promocion.precio }}</p>
-      <p v-if="promocion.descuento && promocion.descuento > 0">
-        <strong>Descuento:</strong> {{ promocion.descuento }}%
-              <p><strong>Precio final:</strong> ${{ promocion.precioFinal || promocion.precio }}</p>
-      </p>
+      <div v-if="promocion.descuento && promocion.descuento > 0">
+        <p><strong>Descuento:</strong> {{ promocion.descuento }}%</p>
+        <p><strong>Precio final:</strong> ${{ promocion.precioFinal || promocion.precio }}</p>
+      </div>
       
       <p><strong>Categorías:</strong>
         <span v-for="(cat, idx) in promocion.categorias" :key="idx">
