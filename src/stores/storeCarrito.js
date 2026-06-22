@@ -76,6 +76,17 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
 
   })
 
+const obtenerTodosLosCarritos = async () => {
+  let resultadoCarritos = []
+  try {
+    const response = await fetch(url)
+    resultadoCarritos = await response.json()
+  } catch (error) {
+    console.error("Error al traer todos los carritos del store:", error)
+  }
+  return resultadoCarritos
+}
+
 return {
   agregarAlCarrito,
   guardarCarrito,

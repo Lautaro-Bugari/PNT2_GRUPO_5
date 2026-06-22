@@ -1,8 +1,9 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import { useStoreCarrito } from "../stores/storeCarrito";
 
+const storeCarrito = useStoreCarrito();
 const users = "https://6a14f50691ff9a63de0731e9.mockapi.io/api/users"
-const carritos = "https://6a14f50691ff9a63de0731e9.mockapi.io/api/carts"
 const listaUsuarios = ref([]);
 const usuarioSeleccionado = ref(null);
 const carritoUsuario = ref(null);
@@ -22,8 +23,7 @@ const mostrarDetalles = async(user) => {
     usuarioSeleccionado.value = user;
     carritoUsuario.value = null;
     try {
-        const response = await fetch(carritos);
-        const carritosData = await response.json();
+        const carritosData = await storeCarrito.obtenerTodosLosCarritos();
         const carritoEncontrado = carritosData.find(carrito => carrito.userId === user.id);
         if (carritoEncontrado) {
             carritoUsuario.value = carritoEncontrado;
@@ -193,10 +193,10 @@ onMounted(() => {
     <div v-if="usuarioSeleccionado" class="contenedor-detalles">
       <h2>Detalles del Usuario</h2>
       <div class="grilla-detalles">
-        <p><strong>Nombre:</strong> {{ usuarioSeleccionado.username }}</p>
-        <p><strong>Email:</strong> {{ usuarioSeleccionado.email }}</p>
-        <p><strong>Contraseña:</strong> {{ usuarioSeleccionado.password }}</p>
-        <p><strong>ID:</strong> {{ usuarioSeleccionado.id }}</p>
+        <p>Nombre:{{ usuarioSeleccionado.username }}</p>
+        <p>Email:{{ usuarioSeleccionado.email }}</p>
+        <p>Contraseña:{{ usuarioSeleccionado.password }}</p>
+        <p>ID:{{ usuarioSeleccionado.id }}</p>
       </div>
 
       <div class="historial-carrito">
