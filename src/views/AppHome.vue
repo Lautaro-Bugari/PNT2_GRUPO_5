@@ -12,7 +12,7 @@ const novedades = ref([])
 const storeProducto = useStoreProducto()
 const storePromos = useStorePromos()
 const avisoLoginVisible = ref(false)
-const ProductoSeleccionado = ref(null) 
+let productoSeleccionado = null 
 const authStore = useAuthStore()
 const storeCarrito = useStoreCarrito()
 const router = useRouter()
@@ -36,11 +36,30 @@ onMounted(async () => {
 
 const verificarLogin = (producto) => {
   if (!authStore.usuarioLogueado) {
-    ProductoSeleccionado.value = producto
+    productoSeleccionado = producto
+
     avisoLoginVisible.value = true
+    
     return
   }
   storeCarrito.agregarAlCarrito(producto)
+}
+
+const irALogin = () => {
+  const ruta =
+    productoSeleccionado?.productosIncluidos ||
+    productoSeleccionado?.categorias
+      ? `/promociones/${productoSeleccionado.id}`
+      : `/producto/${productoSeleccionado.id}`
+
+  console.log(ruta)
+
+  router.push({
+    path: "/login",
+    query: {
+      redirect: ruta
+    }
+  })
 }
 </script>
 
@@ -49,15 +68,7 @@ const verificarLogin = (producto) => {
     <AvisoLogin 
       v-if="avisoLoginVisible"
       @cerrar="avisoLoginVisible = false"
-      @login="
-        const ruta = productoSeleccionado?.productosIncluidos || productoSeleccionado?.categorias
-          ? `/promociones/${productoSeleccionado.id}`
-          : `/productos/${productoSeleccionado.id}`;
-        router.push({
-          path: '/login',
-          query: { redirect: ruta }
-        });
-        "
+      @login="irALogin"
     />
   </div>
 

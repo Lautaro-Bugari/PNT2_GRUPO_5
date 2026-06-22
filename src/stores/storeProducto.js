@@ -83,6 +83,18 @@ export const useStoreProducto = defineStore("storeProducto", () => {
         }
     }
 
+const getProductoById = async (id) => {
+  try {
+    const response = await fetch(`${API_URL}/producto/${id}`)
+    if (!response.ok) throw new Error('Producto no encontrado')
+   const result = await response.json()
+    return result.data
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
 
     const getProductos = async () => {
          await actualizarProductos()
@@ -99,6 +111,7 @@ export const useStoreProducto = defineStore("storeProducto", () => {
     return {
         actualizarProductos,
         getProductos,
-        getIdProductosSinStock
+        getIdProductosSinStock,
+        getProductoById
     }
 })

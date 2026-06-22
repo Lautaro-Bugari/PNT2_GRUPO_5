@@ -7,6 +7,8 @@ import App from "./App.vue";
 import Login from "./views/Login.vue";
 import Checkout from "./views/Checkout.vue";
 import Confirmacion from "./views/Confirmacion.vue";
+import PromocionesDetalle from "./views/PromocionesDetalle.vue";
+import ProductoDetalle from "./views/ProductoDetalle.vue";
 
 const routes = [
   {
@@ -28,7 +30,16 @@ const routes = [
   {
     path: "/pedido/:idPedido",
     component: Confirmacion
-  }
+  },
+    {
+    path: "/promociones/:promocionId",
+    component: PromocionesDetalle
+  },
+      {
+    path: "/producto/:productoId",
+    component: ProductoDetalle
+  },
+
 ];
 
 const router = createRouter({

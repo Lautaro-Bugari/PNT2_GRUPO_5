@@ -54,6 +54,21 @@ const desactivarPromocion = async (id) => {
         return resultados
     }
 
+    const getPromocionById = async (id) => {
+  try {
+    const response = await fetch(`${API_URL}/promociones/${id}`)
+    if (!response.ok) throw new Error('Promoción no encontrada')
+    const data = await response.json()
+    return {
+      ...data,
+      precioFinal: data.descuento ? data.precio * (1 - data.descuento / 100) : data.precio
+    }
+  } catch (error) {
+    console.error('Error en getPromocionById:', error)
+    return null
+  }
+}
+
  const reactivarPromocion = async (id) => {
         try {
             const response = await fetch(`${API_URL}/promociones/${id}/reactivar`, {
@@ -74,6 +89,7 @@ const desactivarPromocion = async (id) => {
         getPromociones,
         desactivarPromocion,
         desactivarPromociones,
-        reactivarPromocion
+        reactivarPromocion,
+        getPromocionById
     }
 })
