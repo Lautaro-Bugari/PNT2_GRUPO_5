@@ -93,7 +93,8 @@ return {
   setCarrito,
   setCarritoId,
   vaciarCarrito,
-  getCantidadTotal
+  getCantidadTotal,
+  obtenerTodosLosCarritos
 
 }
 
