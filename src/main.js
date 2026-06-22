@@ -8,6 +8,8 @@ import Login from "./views/Login.vue";
 import Checkout from "./views/Checkout.vue";
 import Confirmacion from "./views/Confirmacion.vue";
 import Admin from "./views/AdminUsuarios.vue";
+import PromocionesDetalle from "./views/PromocionesDetalle.vue";
+import ProductoDetalle from "./views/ProductoDetalle.vue";
 
 const routes = [
   {
@@ -33,7 +35,16 @@ const routes = [
   {
     path: "/admin/usuarios",
     component: Admin
-  }
+  },
+    {
+    path: "/promociones/:promocionId",
+    component: PromocionesDetalle
+  },
+      {
+    path: "/producto/:productoId",
+    component: ProductoDetalle
+  },
+
 ];
 
 const router = createRouter({
