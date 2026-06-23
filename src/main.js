@@ -7,10 +7,12 @@ import App from "./App.vue";
 import Login from "./views/Login.vue";
 import Checkout from "./views/Checkout.vue";
 import Confirmacion from "./views/Confirmacion.vue";
+import Admin from "./views/AdminUsuarios.vue";
 import PromocionesDetalle from "./views/PromocionesDetalle.vue";
 import ProductoDetalle from "./views/ProductoDetalle.vue";
 import AdminProductos from './views/AdminProductos.vue'
 import ProductoForm from './views/ProductoForm.vue'
+import AdminPedidos from "./views/AdminPedidos.vue";
 import MisPedidos from './views/MisPedidos.vue'
 import AdminPromociones from './views/AdminPromociones.vue'
 import PromocionForm from './views/PromocionForm.vue'
@@ -38,7 +40,11 @@ const routes = [
     path: "/pedido/:idPedido",
     component: Confirmacion
   },
-      {
+  {
+    path: "/admin/usuarios",
+    component: Admin
+  },
+  {
     path: '/mis-pedidos',
     name: 'MisPedidos',
     component: MisPedidos
@@ -52,21 +58,26 @@ const routes = [
     component: ProductoDetalle
   },
   {
-      path: '/admin/productos',
-    name: 'AdminProductos',
+      path: "/admin/productos",
+    name: "AdminProductos",
     component: AdminProductos
   },
   {
-    path: '/producto/nuevo',
-    name: 'ProductoNuevo',
+    path: "/producto/nuevo",
+    name: "ProductoNuevo",
     component: ProductoForm
   },
   {
-    path: '/producto/editar/:id',
-    name: 'ProductoEditar',
+    path: "/producto/editar/:id",
+    name: "ProductoEditar",
     component: ProductoForm
   },
-    {
+  {
+    path: "/admin/pedidos",
+    name: "AdminPedidos",
+    component: AdminPedidos
+  },
+  {
     path: '/admin/promociones',
     name: 'AdminPromociones',
     component: AdminPromociones

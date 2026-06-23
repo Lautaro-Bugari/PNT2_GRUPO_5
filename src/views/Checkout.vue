@@ -10,14 +10,13 @@ const storePedidos = useStorePedidos()
 const authStore = useAuthStore()
 const router = useRouter()
 
-// Redirigir al login si el usuario no está autenticado
 onMounted(() => {
   if (!authStore.usuarioLogueado) {
     router.push({ path: "/login", query: { redirect: "/checkout" } })
   }
 })
 
-// Cálculos reactivos
+
 const subtotal = computed(() => {
   return storeCarrito.carrito.reduce((sum, item) => sum + item.precio * item.cantidad, 0)
 })
@@ -34,7 +33,6 @@ const faltanteEnvioGratis = computed(() => {
   return 120000 - subtotal.value
 })
 
-// Control de cantidades
 const incrementarCantidad = async (item) => {
   item.cantidad++
   await storeCarrito.guardarCarrito()
@@ -44,7 +42,6 @@ const decrementarCantidad = async (item) => {
   if (item.cantidad > 1) {
     item.cantidad--
   } else {
-    // Si llega a 0, se remueve del carrito
     const index = storeCarrito.carrito.findIndex(i => i.id === item.id)
     if (index !== -1) {
       storeCarrito.carrito.splice(index, 1)
@@ -57,16 +54,15 @@ const vaciarElCarrito = async () => {
   storeCarrito.vaciarCarrito()
 }
 
-// Datos del formulario de facturación (CU05)
+
 const form = ref({
   nombreCompleto: "",
-  tipoFactura: "B", // Defecto Factura B (Consumidor Final)
+  tipoFactura: "B",
   cuit: "",
   metodoEntrega: "Retiro",
   metodoPago: "Efectivo"
 })
 
-// Validación del formulario
 const errorCuit = computed(() => {
   if (form.value.tipoFactura === "A") {
     const cuitLimpio = form.value.cuit.trim()
@@ -92,11 +88,9 @@ const esFormularioValido = computed(() => {
   return nombreValido && facturaValida && metodoEntregaValido && metodoPagoValido
 })
 
-// Confirmar e ir a pantalla de éxito/tracking
+
 const confirmarPedido = async () => {
   if (!esFormularioValido.value) return
-
-  // Regla literal RN4
   if (subtotal.value > 50000) {
     alert("No se puede consolidar el pedido ya que el monto supera el piso máximo de $50.000.")
     return
@@ -108,7 +102,6 @@ const confirmarPedido = async () => {
       subtotal.value,
       costoEnvio.value
     )
-    // Redirigir a la pantalla de confirmación/tracking
     router.push(`/pedido/${nuevoPedido.idPedido}`)
   } catch (error) {
     console.error("Error al procesar el pedido:", error)
@@ -120,7 +113,6 @@ const confirmarPedido = async () => {
 <template>
   <div class="checkout-container">
     <h1>Checkout de Compra</h1>
-
     <!-- 1. Flujo alternativo: Carrito Vacío -->
     <div v-if="storeCarrito.carrito.length === 0 || !storeCarrito.carrito" class="carrito-vacio">
       <p>Tu carrito está vacío. ¡Visitá nuestro catálogo para empezar a comprar!</p>
@@ -128,11 +120,7 @@ const confirmarPedido = async () => {
         📦 Ver Productos
       </button>
     </div>
-
-    <!-- 2. Carrito con Productos -->
     <div v-else class="checkout-content">
-      
-      <!-- Detalle del Carrito -->
       <section class="carrito-seccion">
         <h2>Detalle del Carrito</h2>
         <table class="tabla-carrito">
@@ -161,35 +149,25 @@ const confirmarPedido = async () => {
             </tr>
           </tbody>
         </table>
-
         <div class="carrito-acciones">
           <button class="btn btn-danger" @click="vaciarElCarrito">🗑️ Vaciar Carrito</button>
         </div>
-
         <div class="totales-desglose">
           <p><strong>Subtotal:</strong> ${{ subtotal.toLocaleString() }}</p>
-          
-          <!-- RN5: Envío Gratis -->
           <p>
             <strong>Costo de Envío:</strong> 
             <span :class="{ 'envio-gratis': costoEnvio === 0 }">
               {{ costoEnvio === 0 ? '¡GRATIS!' : '$' + costoEnvio.toLocaleString() }}
             </span>
           </p>
-
           <p class="total-final"><strong>Total Final:</strong> ${{ totalFinal.toLocaleString() }}</p>
         </div>
       </section>
-
-      <!-- 3. Formulario de Facturación / Regla de Monto Mínimo (RN4) -->
       <section class="facturacion-seccion">
         <h2>Datos de Facturación y Entrega</h2>
-
-        <!-- RN4 Literal: Solo se renderiza si la sumatoria de productos NO supera el piso de $50.000 -->
         <div v-if="subtotal > 50000" class="alerta-bloqueo">
           ⚠️ <strong>Monto Máximo Superado (RN4):</strong> El monto de compra (${{ subtotal.toLocaleString() }}) supera el piso máximo de $50.000 permitido para avanzar al pago. Disminuye las cantidades o remueve ítems para poder continuar.
         </div>
-
         <form v-else @submit.prevent="confirmarPedido" class="formulario-facturacion">
           <div class="form-group">
             <label for="nombreCompleto">Nombre Completo / Razón Social:</label>
@@ -201,7 +179,6 @@ const confirmarPedido = async () => {
               required
             />
           </div>
-
           <div class="form-group">
             <label>Tipo de Factura:</label>
             <div class="radio-group">
@@ -215,8 +192,6 @@ const confirmarPedido = async () => {
               </label>
             </div>
           </div>
-
-          <!-- CUIT Condicional para Factura A (RN6) -->
           <div v-if="form.tipoFactura === 'A'" class="form-group animate-cuit">
             <label for="cuit">CUIT (11 dígitos):</label>
             <input 
@@ -229,7 +204,6 @@ const confirmarPedido = async () => {
             />
             <span v-if="errorCuit" class="error-msg">{{ errorCuit }}</span>
           </div>
-
           <div class="form-group">
             <label for="metodoEntrega">Método de Entrega:</label>
             <select id="metodoEntrega" v-model="form.metodoEntrega">
@@ -237,7 +211,6 @@ const confirmarPedido = async () => {
               <option value="Envio">Envío a Domicilio</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="metodoPago">Método de Pago:</label>
             <select id="metodoPago" v-model="form.metodoPago">
@@ -245,7 +218,6 @@ const confirmarPedido = async () => {
               <option value="Transferencia">Transferencia Bancaria</option>
             </select>
           </div>
-
           <button 
             type="submit" 
             class="btn btn-success btn-submit" 
@@ -255,246 +227,335 @@ const confirmarPedido = async () => {
           </button>
         </form>
       </section>
-
     </div>
   </div>
 </template>
 
 <style scoped>
-.checkout-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: sans-serif;
+.confirmacion-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  color: #2b2b2b;
 }
 
-h1, h2 {
+h1 {
+  font-size: 30px;
+  font-weight: 800;
+  color: #e60000;
+  margin: 0 0 10px 0;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 700;
   color: #333;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 8px;
+  margin-top: 0;
+  border-bottom: 2px solid #333;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
-.carrito-vacio {
+.pedido-no-encontrado {
   text-align: center;
-  padding: 40px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  border: 1px dashed #ccc;
+  padding: 50px 30px;
+  background-color: #fff5f5;
+  border-radius: 12px;
+  border: 1px solid #f8d7da;
+  color: #b52a37;
+  max-width: 500px;
+  margin: 40px auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
-.checkout-content {
+.exito-encabezado {
+  text-align: center;
+  background-color: #ffffff;
+  padding: 40px 30px;
+  border-radius: 12px;
+  border: 1px solid #eaeaea;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.icono-exito {
+  font-size: 3.5rem;
+  display: block;
+  margin-bottom: 15px;
+}
+
+.nro-tracking {
+  font-size: 1.3rem;
+  color: #333;
+  margin: 8px 0;
+}
+
+.nro-tracking strong {
+  color: #e60000;
+}
+
+.fecha-pedido {
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.tracking-seccion {
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.stepper {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin: 40px 0;
+}
+
+.stepper::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: #eaeaea;
+  z-index: 1;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+}
+
+.step-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #fff;
+  border: 4px solid #eaeaea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #999;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.step-label {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #666;
+  font-weight: 600;
+  text-align: center;
+}
+
+.step-completed .step-circle {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: #fff;
+}
+
+.step-completed .step-label {
+  color: #28a745;
+}
+
+.step-active .step-circle {
+  background-color: #e60000;
+  border-color: #e60000;
+  color: #fff;
+  box-shadow: 0 0 0 5px rgba(230, 0, 0, 0.15);
+}
+
+.step-active .step-label {
+  color: #e60000;
+  font-weight: 700;
+}
+
+.simulador-estados {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px dashed #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.simulador-estados span {
+  font-size: 13px;
+  color: #777;
+  font-weight: 700;
+}
+
+.btn-group-sim {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-sim {
+  padding: 6px 14px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  color: #555;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-sim:hover:not(:disabled) {
+  background-color: #f1f1f1;
+  border-color: #333;
+}
+
+.btn-sim:disabled {
+  background-color: #333;
+  color: #fff;
+  border-color: #333;
+  cursor: default;
+}
+
+.detalles-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 40px;
 }
 
-@media (max-width: 768px) {
-  .checkout-content {
+@media (max-width: 992px) {
+  .detalles-grid {
     grid-template-columns: 1fr;
   }
 }
 
-.tabla-carrito {
+.productos-seccion, .facturacion-seccion {
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.tabla-productos {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
-.tabla-carrito th, .tabla-carrito td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
+.tabla-productos th {
+  background-color: #f8f9fa;
+  color: #444;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  padding: 12px;
+  border-bottom: 2px solid #eaeaea;
 }
 
-.tabla-carrito th {
-  background-color: #f5f5f5;
+.tabla-productos td {
+  padding: 15px 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
 }
 
 .td-img {
-  width: 70px;
+  width: 60px;
   text-align: center;
 }
 
 .img-producto {
-  width: 50px;
-  height: 50px;
+  width: 45px;
+  height: 45px;
   object-fit: cover;
-  border-radius: 4px;
-}
-
-.td-cantidades {
-  white-space: nowrap;
-}
-
-.btn-cant {
-  padding: 4px 8px;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  cursor: pointer;
-  border-radius: 4px;
-  font-weight: bold;
-}
-
-.btn-cant:hover {
-  background-color: #eee;
-}
-
-.cantidad-num {
-  margin: 0 10px;
-  font-weight: bold;
-}
-
-.carrito-acciones {
-  margin-bottom: 20px;
-}
-
-.totales-desglose {
-  background-color: #f7f7f7;
-  padding: 15px;
   border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+.totales-caja {
+  background-color: #fdfdfd;
+  padding: 20px;
+  border-radius: 8px;
   border: 1px solid #eaeaea;
 }
 
-.totales-desglose p {
-  margin: 6px 0;
+.totales-caja p {
+  margin: 10px 0;
   display: flex;
   justify-content: space-between;
-  font-size: 1.05rem;
-}
-
-.total-final {
-  border-top: 1px solid #ccc;
-  padding-top: 10px;
-  margin-top: 10px;
-  font-size: 1.25rem !important;
-  color: #2c3e50;
-}
-
-.envio-gratis {
-  color: #27ae60;
-  font-weight: bold;
-}
-
-.alerta-envio {
-  background-color: #e8f8f5;
-  color: #16a085;
-  padding: 8px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  margin: 10px 0;
-  border-left: 4px solid #1abc9c;
-}
-
-.alerta-bloqueo {
-  background-color: #fdf2f2;
-  color: #c0392b;
-  padding: 15px;
-  border-radius: 6px;
-  border-left: 5px solid #e74c3c;
-  line-height: 1.4;
-  margin-bottom: 20px;
-}
-
-.formulario-facturacion {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  padding: 20px;
-  border-radius: 8px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  font-weight: bold;
-  margin-bottom: 5px;
+  font-size: 15px;
   color: #555;
 }
 
-.form-group input[type="text"],
-.form-group select {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
+.total-final {
+  border-top: 2px dashed #eaeaea;
+  padding-top: 15px;
+  margin-top: 15px !important;
+  font-size: 20px !important;
+  font-weight: 800;
+  color: #e60000;
 }
 
-.radio-group {
+.datos-lista {
   display: flex;
-  gap: 15px;
-  margin-top: 5px;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.radio-group label {
-  font-weight: normal;
+.dato-item {
   display: flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
+  flex-direction: column;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
 }
 
-.error-msg {
-  color: #c0392b;
-  font-size: 0.85rem;
-  margin-top: 5px;
+.dato-label {
+  font-size: 13px;
+  color: #777;
+  font-weight: 700;
+}
+
+.dato-valor {
+  font-size: 16px;
+  color: #2b2b2b;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.pedido-acciones {
+  margin-top: 35px;
 }
 
 .btn {
-  padding: 10px 16px;
+  padding: 14px 20px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 600;
   text-align: center;
+  transition: background-color 0.2s, transform 0.1s;
+  width: 100%;
+}
+
+.btn:active {
+  transform: scale(0.99);
 }
 
 .btn-primary {
-  background-color: #3498db;
+  background-color: #e60000;
   color: #fff;
 }
 
 .btn-primary:hover {
-  background-color: #2980b9;
-}
-
-.btn-danger {
-  background-color: #e74c3c;
-  color: #fff;
-}
-
-.btn-danger:hover {
-  background-color: #c0392b;
-}
-
-.btn-success {
-  background-color: #2ecc71;
-  color: #fff;
-}
-
-.btn-success:hover {
-  background-color: #27ae60;
-}
-
-.btn:disabled {
-  background-color: #bdc3c7;
-  cursor: not-allowed;
-}
-
-.btn-submit {
-  width: 100%;
-  margin-top: 15px;
-}
-
-.animate-cuit {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  background-color: #c90000;
 }
 </style>
