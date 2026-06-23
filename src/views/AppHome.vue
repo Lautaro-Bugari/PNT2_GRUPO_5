@@ -116,3 +116,4 @@ const irADetalle = (producto) => {
     </div>
   </div>
 </template>
+

@@ -35,7 +35,6 @@ onMounted(async () => {
   }
 })
 
-// Estados de ciclo de vida del pedido (CU06)
 const estados = ["Recibido", "Preparando", "En camino", "Listo para retirar"]
 
 const indexEstadoActual = computed(() => {
@@ -55,7 +54,6 @@ const cambiarEstado = async (nuevoEstado) => {
   }
 }
 
-// Formatear fecha
 const formatearFecha = (fechaStr) => {
   if (!fechaStr) return ""
   const d = new Date(fechaStr)
@@ -93,8 +91,6 @@ const formatearFecha = (fechaStr) => {
         <p class="nro-tracking">Número de tracking: <strong>#{{ pedido.idPedido }}</strong></p>
         <p class="fecha-pedido">Realizado el: {{ formatearFecha(pedido.fecha) }}</p>
       </div>
-
-      <!-- Barra de Estado Visual del Tracking (CU06) -->
       <section class="tracking-seccion">
         <h2>Estado del Pedido</h2>
         <div class="stepper">
@@ -114,7 +110,6 @@ const formatearFecha = (fechaStr) => {
             <div class="step-label">{{ estado }}</div>
           </div>
         </div>
-
         <!-- Controles de simulación de estado para testing -->
         <div v-if="authStore.esAdmin" class="simulador-estados">
           <span>🛠️ Cambiar estado para verificar tracking:</span>
@@ -131,9 +126,7 @@ const formatearFecha = (fechaStr) => {
           </div>
         </div>
       </section>
-
       <div class="detalles-grid">
-        <!-- Resumen de Productos (Solo Lectura - RN7) -->
         <section class="productos-seccion">
           <h2>Productos Comprados</h2>
           <table class="tabla-productos">
@@ -158,7 +151,6 @@ const formatearFecha = (fechaStr) => {
               </tr>
             </tbody>
           </table>
-
           <div class="totales-caja">
             <p><span>Subtotal:</span> <span>${{ pedido.subtotal.toLocaleString() }}</span></p>
             <p>
@@ -171,8 +163,6 @@ const formatearFecha = (fechaStr) => {
             </p>
           </div>
         </section>
-
-        <!-- Datos de Facturación (Solo Lectura - RN7) -->
         <section class="facturacion-seccion">
           <h2>Datos de Facturación y Entrega</h2>
           <div class="datos-lista">
@@ -180,30 +170,25 @@ const formatearFecha = (fechaStr) => {
               <span class="dato-label">Razón Social / Nombre:</span>
               <span class="dato-valor">{{ pedido.datosFacturacion.nombreCompleto }}</span>
             </div>
-            
             <div class="dato-item">
               <span class="dato-label">Tipo de Factura:</span>
               <span class="dato-valor">Factura {{ pedido.datosFacturacion.tipoFactura }}</span>
             </div>
-
             <div v-if="pedido.datosFacturacion.tipoFactura === 'A'" class="dato-item">
               <span class="dato-label">CUIT:</span>
               <span class="dato-valor">{{ pedido.datosFacturacion.cuit }}</span>
             </div>
-
             <div class="dato-item">
               <span class="dato-label">Método de Entrega:</span>
               <span class="dato-valor">
                 {{ pedido.datosFacturacion.metodoEntrega === 'Retiro' ? 'Retiro en depósito' : 'Envío a domicilio' }}
               </span>
             </div>
-
             <div class="dato-item">
               <span class="dato-label">Método de Pago:</span>
               <span class="dato-valor">{{ pedido.datosFacturacion.metodoPago }}</span>
             </div>
           </div>
-
           <div class="pedido-acciones">
             <button class="btn btn-primary btn-volver" @click="router.push('/productos')">
               📦 Continuar Comprando
@@ -211,46 +196,71 @@ const formatearFecha = (fechaStr) => {
           </div>
         </section>
       </div>
-
     </div>
   </div>
 </template>
 
 <style scoped>
 .confirmacion-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: sans-serif;
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  color: #2b2b2b;
+}
+
+h1 {
+  font-size: 30px;
+  font-weight: 800;
+  color: #e60000;
+  margin: 0 0 10px 0;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin-top: 0;
+  border-bottom: 2px solid #333;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 .pedido-no-encontrado {
   text-align: center;
-  padding: 50px;
-  background-color: #fdf2f2;
-  border-radius: 8px;
-  border: 1px solid #f5c6cb;
+  padding: 50px 30px;
+  background-color: #fff5f5;
+  border-radius: 12px;
+  border: 1px solid #f8d7da;
+  color: #b52a37;
+  max-width: 500px;
+  margin: 40px auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .exito-encabezado {
   text-align: center;
-  background-color: #ebf9eb;
-  padding: 30px;
-  border-radius: 8px;
-  border: 1px solid #d4edda;
-  margin-bottom: 25px;
+  background-color: #ffffff;
+  padding: 40px 30px;
+  border-radius: 12px;
+  border: 1px solid #eaeaea;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .icono-exito {
   font-size: 3.5rem;
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .nro-tracking {
-  font-size: 1.25rem;
-  color: #155724;
-  margin: 5px 0;
+  font-size: 1.3rem;
+  color: #333;
+  margin: 8px 0;
+}
+
+.nro-tracking strong {
+  color: #e60000;
 }
 
 .fecha-pedido {
@@ -259,36 +269,29 @@ const formatearFecha = (fechaStr) => {
 }
 
 .tracking-seccion {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 25px;
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
-h2 {
-  color: #333;
-  margin-top: 0;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 8px;
-}
-
-/* Stepper para Barra de Estado */
 .stepper {
   display: flex;
   justify-content: space-between;
   position: relative;
-  margin: 30px 0;
+  margin: 40px 0;
 }
 
 .stepper::before {
   content: '';
   position: absolute;
-  top: 20px;
+  top: 22px;
   left: 0;
   right: 0;
   height: 4px;
-  background-color: #e0e0e0;
+  background-color: #eaeaea;
   z-index: 1;
 }
 
@@ -306,59 +309,59 @@ h2 {
   height: 44px;
   border-radius: 50%;
   background-color: #fff;
-  border: 4px solid #e0e0e0;
+  border: 4px solid #eaeaea;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   color: #999;
+  font-size: 15px;
   transition: all 0.3s ease;
 }
 
 .step-label {
-  margin-top: 8px;
-  font-size: 0.9rem;
+  margin-top: 12px;
+  font-size: 14px;
   color: #666;
-  font-weight: bold;
+  font-weight: 600;
   text-align: center;
 }
 
-/* Clases de estado completado y activo */
 .step-completed .step-circle {
-  background-color: #2ecc71;
-  border-color: #2ecc71;
+  background-color: #28a745;
+  border-color: #28a745;
   color: #fff;
 }
 
 .step-completed .step-label {
-  color: #27ae60;
+  color: #28a745;
 }
 
 .step-active .step-circle {
-  background-color: #3498db;
-  border-color: #3498db;
+  background-color: #e60000;
+  border-color: #e60000;
   color: #fff;
-  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.25);
+  box-shadow: 0 0 0 5px rgba(230, 0, 0, 0.15);
 }
 
 .step-active .step-label {
-  color: #2980b9;
+  color: #e60000;
+  font-weight: 700;
 }
 
-/* Simulador de estados */
 .simulador-estados {
-  margin-top: 25px;
-  padding-top: 15px;
-  border-top: 1px dashed #ccc;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px dashed #ddd;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .simulador-estados span {
-  font-size: 0.85rem;
-  color: #7f8c8d;
-  font-weight: bold;
+  font-size: 13px;
+  color: #777;
+  font-weight: 700;
 }
 
 .btn-group-sim {
@@ -368,61 +371,69 @@ h2 {
 }
 
 .btn-sim {
-  padding: 5px 12px;
-  font-size: 0.8rem;
-  border: 1px solid #cbd5e1;
-  background-color: #f8fafc;
-  color: #475569;
+  padding: 6px 14px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  color: #555;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
 .btn-sim:hover:not(:disabled) {
-  background-color: #f1f5f9;
-  color: #1e293b;
+  background-color: #f1f1f1;
+  border-color: #333;
 }
 
 .btn-sim:disabled {
-  background-color: #3498db;
+  background-color: #333;
   color: #fff;
-  border-color: #3498db;
+  border-color: #333;
   cursor: default;
 }
 
-/* Detalles Grid */
 .detalles-grid {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
-  gap: 30px;
+  gap: 40px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .detalles-grid {
     grid-template-columns: 1fr;
   }
 }
 
 .productos-seccion, .facturacion-seccion {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  padding: 20px;
-  border-radius: 8px;
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .tabla-productos {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 15px;
-}
-
-.tabla-productos th, .tabla-productos td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
+  margin-bottom: 20px;
 }
 
 .tabla-productos th {
-  background-color: #f5f5f5;
+  background-color: #f8f9fa;
+  color: #444;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  padding: 12px;
+  border-bottom: 2px solid #eaeaea;
+}
+
+.tabla-productos td {
+  padding: 15px 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
 }
 
 .td-img {
@@ -431,83 +442,89 @@ h2 {
 }
 
 .img-producto {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 6px;
+  border: 1px solid #eee;
 }
 
 .totales-caja {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 6px;
+  background-color: #fdfdfd;
+  padding: 20px;
+  border-radius: 8px;
   border: 1px solid #eaeaea;
 }
 
 .totales-caja p {
-  margin: 6px 0;
+  margin: 10px 0;
   display: flex;
   justify-content: space-between;
+  font-size: 15px;
+  color: #555;
 }
 
 .total-final {
-  border-top: 1px solid #ccc;
-  padding-top: 10px;
-  margin-top: 10px;
-  font-size: 1.15rem;
-  font-weight: bold;
-  color: #2c3e50;
+  border-top: 2px dashed #eaeaea;
+  padding-top: 15px;
+  margin-top: 15px !important;
+  font-size: 20px !important;
+  font-weight: 800;
+  color: #e60000;
 }
 
 .datos-lista {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .dato-item {
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
+  padding-bottom: 10px;
 }
 
 .dato-label {
-  font-size: 0.85rem;
-  color: #7f8c8d;
-  font-weight: bold;
+  font-size: 13px;
+  color: #777;
+  font-weight: 700;
 }
 
 .dato-valor {
-  font-size: 1.05rem;
-  color: #2c3e50;
-  margin-top: 2px;
+  font-size: 16px;
+  color: #2b2b2b;
+  font-weight: 500;
+  margin-top: 4px;
 }
 
 .pedido-acciones {
-  margin-top: 30px;
+  margin-top: 35px;
 }
 
 .btn {
-  padding: 10px 16px;
+  padding: 14px 20px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 600;
   text-align: center;
+  transition: background-color 0.2s, transform 0.1s;
+  width: 100%;
+}
+
+.btn:active {
+  transform: scale(0.99);
 }
 
 .btn-primary {
-  background-color: #3498db;
+  background-color: #e60000;
   color: #fff;
 }
 
 .btn-primary:hover {
-  background-color: #2980b9;
-}
-
-.btn-volver {
-  width: 100%;
+  background-color: #c90000;
 }
 </style>
