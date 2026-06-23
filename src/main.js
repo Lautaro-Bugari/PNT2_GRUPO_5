@@ -46,8 +46,6 @@ const routes = [
     path: "/producto/:productoId",
     component: ProductoDetalle
   },
-<<<<<<< HEAD
-=======
   {
       path: '/admin/productos',
     name: 'AdminProductos',
@@ -64,7 +62,6 @@ const routes = [
     component: ProductoForm
   }
 
->>>>>>> origin/main
 ];
 
 const router = createRouter({

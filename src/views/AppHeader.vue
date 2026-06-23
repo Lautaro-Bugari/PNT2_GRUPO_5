@@ -21,45 +21,35 @@ const goHome = () => {
 const goProductos = () => {
     router.push('/productos');
 };
+
+
 </script>
 
 <template>
-  <header class="barra-navegacion">
-    <div class="menu-izquierdo">
-      <button @click="goHome" :disabled="isActHome">
-        Inicio
+  <div>
+    <button @click="goHome" :disabled="isActHome">
+        🏠 Inicio
+    </button>
+    <button @click="goProductos" :disabled="isActProductos">
+        📦 Productos
+    </button>
+  </div>
+    <div>
+      <button @click="router.push('/checkout')" :disabled="route.path === '/checkout'">
+        🛒 Carrito {{ storeCarrito.getCantidadTotal }}
       </button>
-      <button @click="goProductos" :disabled="isActProductos">
-        Productos
+    </div>
+    <div>
+      <p v-if="authStore.usuarioLogueado !== null">
+        {{ authStore.usuarioLogueado.nombre }}
+        <img :src="authStore.usuarioLogueado.avatar" width="50"
+/>
+      </p>
+      <button v-if="authStore.usuarioLogueado !== null" @click="authStore.logout">
+        🚪 Cerrar sesión
+      </button>
+    <button v-else @click="router.push({path:'/login',query:{redirect: route.path}})">
+        🔑 Iniciar sesión
       </button>
     </div>
-    <div class="contenedor-busqueda">
-      <img src="/imagenes/lupa-busqueda.png" class="icono-lupa"/>
-      <input 
-        type="text" 
-        placeholder="Buscar productos..." 
-        class="input-busqueda"
-      />
-    </div>
-    <div class="menu-derecho">
-      <div>
-        <button @click="router.push('/checkout')" :disabled="route.path === '/checkout'">
-          <img src="/imagenes/carrito.png" class="icono-header" /> Carrito {{ storeCarrito.getCantidadTotal }}
-        </button>
-      </div>
-      <div>
-        <p v-if="authStore.usuarioLogueado !== null" class="usuario-perfil">
-          {{ authStore.usuarioLogueado.nombre }}
-          <img :src="authStore.usuarioLogueado.avatar" width="50" class="avatar-foto"/>
-        </p>
-        <button v-if="authStore.usuarioLogueado !== null" @click="authStore.logout">
-          Cerrar sesión
-        </button>
-        <button v-else @click="router.push({path:'/login',query:{redirect: route.path}})">
-          <img src="/imagenes/user.png" class="icono-header"/> Iniciar sesión
-        </button>
-      </div>
-    </div>
-  </header>
 </template>
-
