@@ -39,6 +39,7 @@ const nuevoUsuario = ref({
   username: "",
   email: "",
   password: "",
+  admin: false,
   avatar: 'https://avatars.githubusercontent.com/u/21501190'
 });
 
@@ -108,7 +109,6 @@ onMounted(() => {
 <template>
   <div class="contenedor-admin">
     <h1 class="titulo-admin">Panel de Administración: Usuarios</h1>
-    
     <div class="barra-acciones">
       <button v-if="!mostrarFormularioCrear" @click="mostrarFormularioCrear = true" class="boton boton-primario">
         Crear Nuevo Usuario
@@ -117,7 +117,6 @@ onMounted(() => {
         Cancelar Creación
       </button>
     </div>
-    
     <div v-if="mostrarFormularioCrear" class="contenedor-formulario">
       <h3>Crear Nuevo Usuario</h3>
       <form @submit.prevent="crearUsuario" class="formulario-admin">
@@ -125,21 +124,23 @@ onMounted(() => {
           <label>Nombre</label>
           <input type="text" v-model="nuevoUsuario.username" required />
         </div>
-
         <div class="grupo-formulario">
           <label>Email</label>
           <input type="email" v-model="nuevoUsuario.email" required />
         </div>
-
         <div class="grupo-formulario">
           <label>Contraseña</label>
           <input type="text" v-model="nuevoUsuario.password" required />
         </div>
-
+        <div class="grupo-formulario checkbox-contenedor">
+          <label class="etiqueta-checkbox">
+            <input type="checkbox" v-model="nuevoUsuario.admin" class="input-checkbox" />
+            Otorgar rol de Administrador
+          </label>
+        </div>
         <button type="submit" class="boton boton-exito">Guardar</button>
       </form>
     </div>
-
     <div v-if="usuarioAEditar" class="contenedor-formulario modo-edicion">
       <h3>Editar Usuario (ID: {{ usuarioAEditar.id }})</h3>
       <form @submit.prevent="guardarEdicion" class="formulario-admin">
@@ -152,66 +153,74 @@ onMounted(() => {
           <label>Email</label>
           <input type="email" v-model="usuarioAEditar.email" required />
         </div>
-
         <div class="grupo-formulario">
           <label>Contraseña</label>
           <input type="text" v-model="usuarioAEditar.password" required />
         </div>
-
+        <div class="grupo-formulario checkbox-contenedor">
+          <label class="etiqueta-checkbox">
+            <input type="checkbox" v-model="usuarioAEditar.admin" class="input-checkbox" />
+            Usuario Administrador
+          </label>
+        </div>
         <div class="acciones-formulario">
           <button type="submit" class="boton boton-exito">Actualizar Datos</button>
           <button type="button" @click="usuarioAEditar = null" class="boton boton-secundario">Cancelar</button>
         </div>
       </form>
     </div>
-
-    <table class="tabla-admin">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Email</th>
-          <th>Contraseña</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="user in listaUsuarios" :key="user.id">
-          <td>{{ user.id }}</td>
-          <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.password }}</td>
-          <td class="acciones-tabla">
-            <button @click="mostrarDetalles(user)" class="boton-accion boton-ver">Ver Detalle</button>
-            <button @click="iniciarEdicion(user)" class="boton-accion boton-editar">Editar</button>
-            <button @click="eliminarUsuario(user.id, user.username)" class="boton-accion boton-eliminar">Eliminar</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
+    <div class="tabla-contenedor">
+      <table class="tabla-admin">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Contraseña</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="user in listaUsuarios" :key="user.id">
+            <td>{{ user.id }}</td>
+            <td class="nombre-destacado">{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td class="pass-celda"><code>{{ user.password }}</code></td>
+            <td>
+              <span :class="['badge-rol', user.admin ? 'es-admin' : 'es-cliente']">
+                {{ user.admin ? 'Admin' : 'Cliente' }}
+              </span>
+            </td>
+            <td class="acciones-tabla">
+              <button @click="mostrarDetalles(user)" class="boton-accion boton-ver">🔍 Detalle</button>
+              <button @click="iniciarEdicion(user)" class="boton-accion boton-editar">✏️ Editar</button>
+              <button @click="eliminarUsuario(user.id, user.username)" class="boton-accion boton-eliminar">🗑️ Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <div v-if="usuarioSeleccionado" class="contenedor-detalles">
       <h2>Detalles del Usuario</h2>
       <div class="grilla-detalles">
-        <p>Nombre:{{ usuarioSeleccionado.username }}</p>
-        <p>Email:{{ usuarioSeleccionado.email }}</p>
-        <p>Contraseña:{{ usuarioSeleccionado.password }}</p>
-        <p>ID:{{ usuarioSeleccionado.id }}</p>
+        <p><strong>ID:</strong> #{{ usuarioSeleccionado.id }}</p>
+        <p><strong>Nombre:</strong> {{ usuarioSeleccionado.username }}</p>
+        <p><strong>Email:</strong> {{ usuarioSeleccionado.email }}</p>
+        <p><strong>Rol:</strong> {{ usuarioSeleccionado.admin ? 'Administrador' : 'Cliente' }}</p>
       </div>
-
       <div class="historial-carrito">
         <h3>Historial de Compras:</h3>
         <div v-if="carritoUsuario && carritoUsuario.itemsProductos && carritoUsuario.itemsProductos.length">
           <ul class="lista-carrito">
             <li v-for="(item, index) in carritoUsuario.itemsProductos" :key="index">
-              <p>Producto ID: {{ item.id }}</p>
-              <p class="etiqueta-cantidad">Cantidad: {{ item.cantidad }}</p>
+              <span class="id-prod-historial">📦 Producto ID: #{{ item.id }}</span>
+              <span class="etiqueta-cantidad">Cantidad: {{ item.cantidad }}</span>
             </li>
           </ul>
         </div>
         <p v-else class="carrito-vacio">Este usuario no tiene productos en su carrito actualmente.</p>
       </div>
-      
       <button @click="usuarioSeleccionado = null" class="boton boton-secundario">Cerrar Detalles</button>
     </div>
   </div>
@@ -219,192 +228,318 @@ onMounted(() => {
 
 <style scoped>
 .contenedor-admin {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 20px;
-  color: #333;
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  color: #2b2b2b;
 }
 
 .titulo-admin {
-  font-size: 28px;
-  color : #df3636;
+  font-size: 34px;
+  font-weight: 800;
+  color: #e60000;
   margin-bottom: 25px;
-  border-bottom: 2px solid #eaeaea;
-  padding-bottom: 10px;
+  border-bottom: 3px solid #333;
+  padding-bottom: 12px;
 }
 
 .barra-acciones {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .boton {
-  padding: 10px 18px;
-  font-size: 15px;
+  padding: 14px 24px;
+  font-size: 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.2s;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.boton:active {
+  transform: scale(0.98);
 }
 
 .boton-primario {
-  background-color: #a62626;
+  background-color: #e60000;
   color: white;
 }
-.boton-primario:hover { background-color: #851e1e; }
+.boton-primario:hover { background-color: #c90000; }
 
 .boton-secundario {
-  background-color: #6e757c;
-  color: white;
+  background-color: #ffffff;
+  color: #444;
+  border: 1px solid #ccc;
 }
-.boton-secundario:hover { background-color: #5a6065; }
+.boton-secundario:hover { background-color: #f1f1f1; border-color: #888; }
 
 .boton-exito {
-  background-color: #198754;
+  background-color: #28a745;
   color: white;
 }
-.boton-exito:hover { background-color: #157347; }
+.boton-exito:hover { background-color: #218838; }
 
-
-.boton-accion {
-  background: none;
-  border: 1px solid #ddd;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 5px;
-  font-size: 16px;
-  transition: all 0.2s;
-}
-
-.boton-ver:hover {
-  background-color: #e8f4fd; border-color: #bee5eb;
-}
-
-.boton-editar:hover {
-  background-color: #fff3cd; border-color: #ffeeba; 
-}
-
-.boton-eliminar:hover {
-  background-color: #f8d7da; border-color: #f5c6cb;
-}
-
-.contenedor-formulario {
-  background-color: #f9f9f9;
-  border: 1px solid #e2e2e2;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 25px;
-}
-.contenedor-formulario.modo-edicion {
-  border-left: 4px solid #ffc107;
-}
-.formulario-admin {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  max-width: 500px;
-}
-.grupo-formulario {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.grupo-formulario label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #555;
-}
-.grupo-formulario input {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 15px;
-}
-.acciones-formulario {
-  display: flex;
-  gap: 10px;
+.tabla-contenedor {
+  background: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+  margin-bottom: 30px;
 }
 
 .tabla-admin {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 15px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  border: 1px solid #eee;
-  margin-bottom: 25px;
+  font-size: 16px;
 }
+
 .tabla-admin th {
   background-color: #f8f9fa;
-  color: #495057;
-  padding: 14px 16px;
-  font-weight: 600;
-  border-bottom: 2px solid #dee2e6;
+  color: #444;
+  padding: 15px 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 14px;
+  border-bottom: 2px solid #eaeaea;
 }
+
 .tabla-admin td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #dee2e6;
+  padding: 18px 16px;
+  border-bottom: 1px solid #eee;
   vertical-align: middle;
 }
-.tabla-admin tbody tr:hover {
-  background-color: #fdfdfd;
+
+.nombre-destacado {
+  font-weight: 700;
+  color: #333;
 }
-code {
+
+.pass-celda code {
   background-color: #f1f1f1;
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: 4px;
   font-family: monospace;
+  font-size: 15px;
+  color: #555;
+}
+
+.badge-rol {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.badge-rol.es-admin {
+  background-color: #fff5f5;
+  color: #e60000;
+  border: 1px solid #fce8e6;
+}
+
+.badge-rol.es-cliente {
+  background-color: #f8f9fa;
+  color: #666;
+  border: 1px solid #eaeaea;
+}
+
+.acciones-tabla {
+  display: flex;
+  gap: 10px;
+}
+
+.boton-accion {
+  background: #ffffff;
+  border: 1px solid #ccc;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: #444;
+  transition: all 0.2s;
+}
+
+.boton-ver:hover {
+  background-color: #f1f1f1; border-color: #333;
+}
+
+.boton-editar:hover {
+  background-color: #fff3cd; border-color: #ffc107; color: #856404;
+}
+
+.boton-eliminar:hover {
+  background-color: #fff5f5; border-color: #f5c2c2; color: #dc3545;
+}
+
+.contenedor-formulario {
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 35px;
+  margin-bottom: 35px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.contenedor-formulario h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.contenedor-formulario.modo-edicion {
+  border-left: 5px solid #ffc107;
+}
+
+.formulario-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 500px;
+}
+
+.grupo-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grupo-formulario label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+}
+
+.grupo-formulario input[type="text"],
+.grupo-formulario input[type="email"] {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.grupo-formulario input:focus {
+  outline: none;
+  border-color: #e60000;
+  box-shadow: 0 0 0 3px rgba(230, 0, 0, 0.1);
+}
+
+.checkbox-contenedor {
+  margin: 8px 0;
+}
+
+.etiqueta-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+}
+
+.input-checkbox {
+  accent-color: #e60000;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.acciones-formulario {
+  display: flex;
+  gap: 12px;
 }
 
 .contenedor-detalles {
-  margin-top: 30px;
-  background-color: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 25px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 35px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
+
+.contenedor-detalles h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
 .grilla-detalles {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   background: #f8f9fa;
-  padding: 15px;
-  border-radius: 6px;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #eee;
 }
+
 .grilla-detalles p {
   margin: 0;
+  font-size: 15px;
 }
-.historial-carrito {
-  margin-bottom: 25px;
+
+.historial-carrito h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 15px;
 }
+
 .lista-carrito {
   list-style: none;
   padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
+
 .lista-carrito li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
-  background-color: #f1f3f5;
-  margin-bottom: 6px;
-  border-radius: 4px;
-  max-width: 400px;
+  padding: 12px 18px;
+  background-color: #ffffff;
+  border: 1px solid #eee;
+  border-left: 4px solid #333;
+  border-radius: 6px;
+  max-width: 450px;
 }
+
+.id-prod-historial {
+  font-weight: 600;
+  font-size: 14px;
+}
+
 .etiqueta-cantidad {
-  background-color: #6c757d;
+  background-color: #e60000;
   color: white;
-  padding: 3px 8px;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 700;
 }
+
 .carrito-vacio {
-  color: #6c757d;
+  color: #777;
   font-style: italic;
+  font-size: 14px;
+}
+
+.contenedor-detalles {
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 </style>
