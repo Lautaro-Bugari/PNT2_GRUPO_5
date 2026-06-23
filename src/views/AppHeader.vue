@@ -58,10 +58,15 @@ const goProductos = () => {
       🎯 Admin Promociones
     </button>
     <button @click="router.push('/admin/categorias')" :disabled="route.path === '/admin/categorias'">
-  🏷️ Admin Categorías
-</button>
+      🏷️ Admin Categorías
+    </button>
+    <button @click="router.push('/admin/pedidos')" :disabled="route.path === '/admin/pedidos'">
+      📝 Admin Pedidos
+    </button>
+    <button @click="router.push('/admin/usuarios')" :disabled="route.path === '/admin/usuarios'">
+      👥 Admin Usuarios
+    </button>
   </div>
-
   <div>
     <p v-if="authStore.usuarioLogueado !== null">
       {{ authStore.usuarioLogueado.nombre }}
