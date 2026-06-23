@@ -77,6 +77,7 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
   })
 
 return {
+  carrito,
   agregarAlCarrito,
   guardarCarrito,
   setCarrito,

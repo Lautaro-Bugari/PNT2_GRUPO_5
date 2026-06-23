@@ -5,7 +5,7 @@ import { useStoreCarrito }from "./storeCarrito"
 const url ="https://6a14f50691ff9a63de0731e9.mockapi.io/api/carts"
 
 export const useAuthStore =
-defineStore('auth', {
+defineStore('authStore', {
 
   state: () => ({
 

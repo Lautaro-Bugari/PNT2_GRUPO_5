@@ -122,7 +122,7 @@ const confirmarPedido = async () => {
     <h1>Checkout de Compra</h1>
 
     <!-- 1. Flujo alternativo: Carrito Vacío -->
-    <div v-if="storeCarrito.carrito.length === 0" class="carrito-vacio">
+    <div v-if="storeCarrito.carrito.length === 0 || !storeCarrito.carrito" class="carrito-vacio">
       <p>Tu carrito está vacío. ¡Visitá nuestro catálogo para empezar a comprar!</p>
       <button class="btn btn-primary" @click="router.push('/productos')">
         📦 Ver Productos

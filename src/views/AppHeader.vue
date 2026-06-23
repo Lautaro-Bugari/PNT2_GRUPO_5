@@ -38,6 +38,11 @@ const goProductos = () => {
       <button @click="router.push('/checkout')" :disabled="route.path === '/checkout'">
         🛒 Carrito {{ storeCarrito.getCantidadTotal }}
       </button>
+      <button v-if="authStore.usuarioLogueado" 
+        @click="router.push('/mis-pedidos')" 
+        :disabled="route.path === '/mis-pedidos'">
+  Mis Pedidos
+</button>
     </div>
     <div>
       <p v-if="authStore.usuarioLogueado !== null">
