@@ -14,6 +14,8 @@ import ProductoForm from './views/ProductoForm.vue'
 import MisPedidos from './views/MisPedidos.vue'
 import AdminPromociones from './views/AdminPromociones.vue'
 import PromocionForm from './views/PromocionForm.vue'
+import AdminCategorias from './views/AdminCategorias.vue'
+import CategoriaForm from './views/CategoriaForm.vue'
 
 const routes = [
   {
@@ -78,6 +80,21 @@ const routes = [
     path: '/promocion/editar/:id',
     name: 'PromocionEditar',
     component: PromocionForm
+  },
+    {
+    path: '/admin/categorias',
+    name: 'AdminCategorias',
+    component: AdminCategorias
+  },
+  {
+    path: '/categoria/nuevo',
+    name: 'CategoriaNuevo',
+    component: CategoriaForm
+  },
+  {
+    path: '/categoria/editar/:id',
+    name: 'CategoriaEditar',
+    component: CategoriaForm
   }
 
 ];
