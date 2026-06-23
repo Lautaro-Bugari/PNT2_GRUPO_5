@@ -76,6 +76,9 @@ const goProductos = () => {
         <button @click="router.push('/admin/usuarios')" :disabled="route.path === '/admin/usuarios'" class="admin-btn">
           👥 Admin Usuarios
         </button>
+        <button @click="router.push('/admin/estadisticas')" :disabled="route.path === '/admin/estadisticas'" class="admin-btn">
+          📊 Estadísticas
+        </button>
       </div>
     </div>
   </header>

@@ -18,6 +18,7 @@ import AdminPromociones from './views/AdminPromociones.vue'
 import PromocionForm from './views/PromocionForm.vue'
 import AdminCategorias from './views/AdminCategorias.vue'
 import CategoriaForm from './views/CategoriaForm.vue'
+import AdminEstadisticas from './views/AdminEstadisticas.vue'
 
 const routes = [
   {
@@ -106,6 +107,12 @@ const routes = [
     path: '/categoria/editar/:id',
     name: 'CategoriaEditar',
     component: CategoriaForm
+  },
+
+  {
+    path: '/admin/estadisticas',
+    name: 'AdminEstadisticas',
+    component: AdminEstadisticas
   }
 
 ];

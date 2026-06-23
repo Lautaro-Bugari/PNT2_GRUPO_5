@@ -4,11 +4,13 @@ import { useRouter } from "vue-router"
 import { useStoreCarrito } from "../stores/storeCarrito"
 import { useStorePedidos } from "../stores/storePedidos"
 import { useAuthStore } from "../stores/authStore"
+import { useStoreProducto } from '../stores/storeProducto'
 
 const storeCarrito = useStoreCarrito()
 const storePedidos = useStorePedidos()
 const authStore = useAuthStore()
 const router = useRouter()
+const storeProducto = useStoreProducto()
 
 onMounted(() => {
   if (!authStore.usuarioLogueado) {
@@ -97,6 +99,52 @@ const confirmarPedido = async () => {
   }
 
   try {
+     const productosADescontar = []
+
+    for (const item of storeCarrito.carrito) {
+      const productoCompleto = await storeProducto.getProductoById(item.id)
+      if (!productoCompleto) {
+        throw new Error(`Producto/promoción con ID ${item.id} no encontrado`)
+      }
+
+      // Si es promoción (tiene productosIncluidos)
+      if (productoCompleto.productosIncluidos?.length) {
+        for (const p of productoCompleto.productosIncluidos) {
+          const cantidad = (p.PromoProducto?.cantidad || 1) * item.cantidad
+          productosADescontar.push({ productoId: p.id, cantidad })
+        }
+      } else {
+        // Es un producto simple
+        productosADescontar.push({ productoId: item.id, cantidad: item.cantidad })
+      }
+    }
+
+    // 3. Agrupar manualmente (sumar cantidades por productoId)
+    const agrupado = {}
+    for (const { productoId, cantidad } of productosADescontar) {
+      if (agrupado[productoId]) {
+        agrupado[productoId] += cantidad
+      } else {
+        agrupado[productoId] = cantidad
+      }
+    }
+
+    // 4. Validar stock y actualizar cada producto
+    for (const [productoId, cantidadRequerida] of Object.entries(agrupado)) {
+      const producto = await storeProducto.getProductoById(productoId)
+      if (!producto) {
+        throw new Error(`Producto con ID ${productoId} no encontrado`)
+      }
+      if (producto.stock < cantidadRequerida) {
+        throw new Error(`Stock insuficiente para "${producto.nombre}" (stock: ${producto.stock}, requerido: ${cantidadRequerida})`)
+      }
+      const productoCompleto = await storeProducto.getProductoById(productoId)
+      const nuevoStock = productoCompleto.stock - cantidadRequerida
+      await storeProducto.updateProducto(productoId, {
+        ...productoCompleto,   
+         stock: nuevoStock          })
+}
+
     const nuevoPedido = await storePedidos.crearPedido(
       form.value,
       subtotal.value,
@@ -105,7 +153,7 @@ const confirmarPedido = async () => {
     router.push(`/pedido/${nuevoPedido.idPedido}`)
   } catch (error) {
     console.error("Error al procesar el pedido:", error)
-    alert("Hubo un error al confirmar tu pedido. Por favor, intenta de nuevo.")
+    alert(`❌ ${error.message}`)
   }
 }
 </script>
