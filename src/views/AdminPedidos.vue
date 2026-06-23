@@ -42,9 +42,18 @@ const formatearFecha = (fechaStr) => {
     })
 }
 
-onMounted(() => {
-    cargarPedidos()
+onMounted(async () => {
+    if (!authStore.usuarioLogueado) {
+    router.push({ path: '/login', query: { redirect: '/admin/pedidos' } })
+    return
+    }
+    if (!authStore.esAdmin) {
+    router.push({ path: '/' })
+    return
+    }
+    await cargarPedidos()
 })
+
 </script>
 
 <template>

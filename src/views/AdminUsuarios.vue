@@ -101,9 +101,18 @@ const guardarEdicion = async () => {
   }
 }
 
-onMounted(() => {
-  cargarUsuarios();
-});
+onMounted(async () => {
+  if (!authStore.usuarioLogueado) {
+    router.push({ path: '/login', query: { redirect: '/admin/usuarios' } })
+    return
+  }
+  if (!authStore.esAdmin) {
+    router.push({ path: '/' })
+    return
+  }
+  await cargarUsuarios()
+})
+
 </script>
 
 <template>
