@@ -14,7 +14,7 @@ const storeCarrito = useStoreCarrito()
 const productos = ref([])
 const busqueda = ref("")
 const avisoLoginVisible = ref(false)
-let ProductoSeleccionado = null
+let productoSeleccionado = null
 const categoriaSeleccionada = ref("Todos")
 
 onMounted(async () => {
@@ -51,7 +51,7 @@ const productosFiltrados = computed(() => {
 
 const verificarLogin = (producto) => {
   if (!authStore.usuarioLogueado) {
-    ProductoSeleccionado = producto
+    productoSeleccionado = producto
     avisoLoginVisible.value = true
     return
   }
@@ -72,6 +72,15 @@ const irALogin = () => {
     productoSeleccionado?.categorias
       ? `/promociones/${productoSeleccionado.id}`
       : `/producto/${productoSeleccionado.id}`
+
+  console.log(ruta)
+
+  router.push({
+    path: "/login",
+    query: {
+      redirect: ruta
+    }
+  })
 }
 </script>
 

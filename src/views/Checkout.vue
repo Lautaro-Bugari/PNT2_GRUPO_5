@@ -5,12 +5,14 @@ import { useStoreCarrito } from "../stores/storeCarrito"
 import { useStorePedidos } from "../stores/storePedidos"
 import { useAuthStore } from "../stores/authStore"
 import { useStoreProducto } from '../stores/storeProducto'
+import { useStorePromos } from "../stores/storePromos"
 
 const storeCarrito = useStoreCarrito()
 const storePedidos = useStorePedidos()
 const authStore = useAuthStore()
 const router = useRouter()
 const storeProducto = useStoreProducto()
+const storePromos = useStorePromos()
 
 onMounted(() => {
   if (!authStore.usuarioLogueado) {
@@ -102,7 +104,10 @@ const confirmarPedido = async () => {
      const productosADescontar = []
 
     for (const item of storeCarrito.carrito) {
-      const productoCompleto = await storeProducto.getProductoById(item.id)
+      let productoCompleto = await storeProducto.getProductoById(item.id)
+      if (!productoCompleto) {
+        productoCompleto = await storePromos.getPromocionById(item.id)
+      }
       if (!productoCompleto) {
         throw new Error(`Producto/promoción con ID ${item.id} no encontrado`)
       }
@@ -131,7 +136,7 @@ const confirmarPedido = async () => {
 
     // 4. Validar stock y actualizar cada producto
     for (const [productoId, cantidadRequerida] of Object.entries(agrupado)) {
-      const producto = await storeProducto.getProductoById(productoId)
+      const producto = await storeProducto.getProductoById(productoId) || storePromos
       if (!producto) {
         throw new Error(`Producto con ID ${productoId} no encontrado`)
       }
