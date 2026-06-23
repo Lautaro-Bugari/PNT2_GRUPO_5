@@ -2,7 +2,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStoreProducto } from '../stores/storeProducto'
+import { useAuthStore } from '../stores/authStore'
 
+const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 const storeProducto = useStoreProducto()
@@ -48,6 +50,15 @@ const cargarProducto = async () => {
 }
 
 onMounted(async () => {
+   if (!authStore.usuarioLogueado) {
+    router.push({ path: "/login", query: { redirect: "/admin/productos" } })
+    return
+  }
+
+  if (!authStore.esAdmin) {
+    router.push({ path: "/" })
+    return
+  }
   await cargarCategorias()
   await cargarProducto()
   cargando.value = false

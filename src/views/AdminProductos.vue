@@ -1,8 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useStoreProducto } from '../stores/storeProducto'
+import { useAuthStore } from '../stores/authStore'
 
+const authStore = useAuthStore()
+const route = useRoute()
 const router = useRouter()
 const storeProducto = useStoreProducto()
 
@@ -23,7 +26,19 @@ const cargarProductos = async () => {
   }
 }
 
-onMounted(cargarProductos)
+onMounted(async () => {
+  if (!authStore.usuarioLogueado) {
+    router.push({ path: "/login", query: { redirect: "/admin/productos" } })
+    return
+  }
+
+  if (!authStore.esAdmin) {
+    router.push({ path: "/" })
+    return
+  }
+
+  await cargarProductos()
+})
 
 const irACrear = () => router.push('/producto/nuevo')
 const irAEditar = (id) => router.push(`/producto/editar/${id}`)

@@ -11,6 +11,9 @@ import PromocionesDetalle from "./views/PromocionesDetalle.vue";
 import ProductoDetalle from "./views/ProductoDetalle.vue";
 import AdminProductos from './views/AdminProductos.vue'
 import ProductoForm from './views/ProductoForm.vue'
+import MisPedidos from './views/MisPedidos.vue'
+import AdminPromociones from './views/AdminPromociones.vue'
+import PromocionForm from './views/PromocionForm.vue'
 
 const routes = [
   {
@@ -32,6 +35,11 @@ const routes = [
   {
     path: "/pedido/:idPedido",
     component: Confirmacion
+  },
+      {
+    path: '/mis-pedidos',
+    name: 'MisPedidos',
+    component: MisPedidos
   },
     {
     path: "/promociones/:promocionId",
@@ -55,6 +63,21 @@ const routes = [
     path: '/producto/editar/:id',
     name: 'ProductoEditar',
     component: ProductoForm
+  },
+    {
+    path: '/admin/promociones',
+    name: 'AdminPromociones',
+    component: AdminPromociones
+  },
+  {
+    path: '/promocion/nuevo',
+    name: 'PromocionNuevo',
+    component: PromocionForm
+  },
+  {
+    path: '/promocion/editar/:id',
+    name: 'PromocionEditar',
+    component: PromocionForm
   }
 
 ];

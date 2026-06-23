@@ -62,7 +62,27 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
     carritoId.value = id
   }
 
-  const vaciarCarrito = () => {
+const vaciarCarrito = async () => {
+  const id = carritoId.value
+  if (!id) {
+    carrito.value = []
+    return
+  }
+
+  try {
+    await fetch(`${url}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemsProductos: [] })
+    })
+    carrito.value = []
+  } catch (error) {
+    console.error("Error al vaciar carrito en MockAPI:", error)
+    carrito.value = []
+  }
+}
+
+    const limpiarCarrito = () => {
     carrito.value = []
     carritoId.value = null
   }
@@ -83,6 +103,7 @@ return {
   setCarrito,
   setCarritoId,
   vaciarCarrito,
+  limpiarCarrito,
   getCantidadTotal
 
 }

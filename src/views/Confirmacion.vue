@@ -116,7 +116,7 @@ const formatearFecha = (fechaStr) => {
         </div>
 
         <!-- Controles de simulación de estado para testing -->
-        <div class="simulador-estados">
+        <div v-if="authStore.esAdmin" class="simulador-estados">
           <span>🛠️ Cambiar estado para verificar tracking:</span>
           <div class="btn-group-sim">
             <button 

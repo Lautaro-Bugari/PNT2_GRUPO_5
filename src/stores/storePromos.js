@@ -2,15 +2,15 @@ import { defineStore } from "pinia"
 import { ref } from "vue"
 
 const API_URL = "http://localhost:8000"
+
 export const useStorePromos = defineStore("storePromos", () => {
     const promos = ref([])
     const promosActivas = ref([])
 
-
+    // ---------- OBTENER TODAS (admin) ----------
     const getAllPromociones = async () => {
         try {
             const response = await fetch(`${API_URL}/promociones/all`)
-/*             if (!response.ok) throw new Error(`Error ${response.status}`) */
             const data = await response.json()
             promos.value = data.data || []
             return promos.value
@@ -21,16 +21,79 @@ export const useStorePromos = defineStore("storePromos", () => {
         }
     }
 
-
+    // ---------- OBTENER SOLO ACTIVAS (público) ----------
     const getPromociones = async () => {
+        try {
             const response = await fetch(`${API_URL}/promociones`)
-/*             if (!response.ok) throw new Error(`Error ${response.status}`)
- */            const data = await response.json()
+            const data = await response.json()
             promosActivas.value = data.data || []
             return promosActivas.value
-}
+        } catch (error) {
+            console.error("Error al obtener promociones activas:", error)
+            promosActivas.value = []
+            return []
+        }
+    }
 
-const desactivarPromocion = async (id) => {
+    // ---------- OBTENER POR ID ----------
+    const getPromocionById = async (id) => {
+        try {
+            const response = await fetch(`${API_URL}/promociones/${id}`)
+            if (!response.ok) throw new Error('Promoción no encontrada')
+            const result = await response.json()
+            return result
+        } catch (error) {
+            console.error('Error en getPromocionById:', error)
+            return null
+        }
+    }
+
+    // ---------- CREAR PROMOCIÓN ----------
+    const createPromocion = async (promocionData) => {
+        try {
+            const response = await fetch(`${API_URL}/promociones`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(promocionData)
+            })
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.message || 'Error al crear promoción')
+            }
+            const data = await response.json()
+            // Actualizar lista local
+            await getAllPromociones()
+            return data.data || null
+        } catch (error) {
+            console.error('Error en createPromocion:', error)
+            throw error
+        }
+    }
+
+    // ---------- ACTUALIZAR PROMOCIÓN ----------
+    const updatePromocion = async (id, promocionData) => {
+        try {
+            const response = await fetch(`${API_URL}/promociones/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(promocionData)
+            })
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.message || 'Error al actualizar promoción')
+            }
+            const data = await response.json()
+            // Actualizar lista local
+            await getAllPromociones()
+            return data.data || null
+        } catch (error) {
+            console.error('Error en updatePromocion:', error)
+            throw error
+        }
+    }
+
+    // ---------- DESACTIVAR PROMOCIÓN ----------
+    const desactivarPromocion = async (id) => {
         try {
             const response = await fetch(`${API_URL}/promociones/${id}/desactivar`, {
                 method: 'PATCH',
@@ -47,26 +110,15 @@ const desactivarPromocion = async (id) => {
         }
     }
 
-     const desactivarPromociones = async (ids) => {
+    // ---------- DESACTIVAR MÚLTIPLES ----------
+    const desactivarPromociones = async (ids) => {
         if (!ids || ids.length === 0) return []
         const resultados = await Promise.all(ids.map(id => desactivarPromocion(id)))
         await getAllPromociones()
         return resultados
     }
 
-    const getPromocionById = async (id) => {
-  try {
-    const response = await fetch(`${API_URL}/promociones/${id}`)
-    if (!response.ok) throw new Error('Promoción no encontrada')
-    const result  = await response.json()
-    return result
-  } catch (error) {
-    console.error('Error en getPromocionById:', error)
-    return null
-  }
-}
-
- const reactivarPromocion = async (id) => {
+    const reactivarPromocion = async (id) => {
         try {
             const response = await fetch(`${API_URL}/promociones/${id}/reactivar`, {
                 method: 'PATCH'
@@ -81,12 +133,15 @@ const desactivarPromocion = async (id) => {
         }
     }
 
+    // ---------- EXPORTAR ----------
     return {
         getAllPromociones,
         getPromociones,
+        getPromocionById,
+        createPromocion,
+        updatePromocion,
         desactivarPromocion,
         desactivarPromociones,
-        reactivarPromocion,
-        getPromocionById
+        reactivarPromocion
     }
 })
