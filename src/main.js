@@ -12,6 +12,7 @@ import PromocionesDetalle from "./views/PromocionesDetalle.vue";
 import ProductoDetalle from "./views/ProductoDetalle.vue";
 import AdminProductos from './views/AdminProductos.vue'
 import ProductoForm from './views/ProductoForm.vue'
+import AdminPedidos from "./views/AdminPedidos.vue";
 
 const routes = [
   {
@@ -47,19 +48,24 @@ const routes = [
     component: ProductoDetalle
   },
   {
-      path: '/admin/productos',
-    name: 'AdminProductos',
+      path: "/admin/productos",
+    name: "AdminProductos",
     component: AdminProductos
   },
   {
-    path: '/producto/nuevo',
-    name: 'ProductoNuevo',
+    path: "/producto/nuevo",
+    name: "ProductoNuevo",
     component: ProductoForm
   },
   {
-    path: '/producto/editar/:id',
-    name: 'ProductoEditar',
+    path: "/producto/editar/:id",
+    name: "ProductoEditar",
     component: ProductoForm
+  },
+  {
+    path: "/admin/pedidos",
+    name: "AdminPedidos",
+    component: AdminPedidos
   }
 
 ];
