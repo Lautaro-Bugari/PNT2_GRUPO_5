@@ -27,7 +27,7 @@ async function manejarLogin() {
       estaTrabajando.value = false
       return
     }
-      await authStore.setUsuario(datoUsuario)
+      authStore.setUsuario(datoUsuario)
       router.push(route.query.redirect || '/')
       estaTrabajando.value = false
 }
