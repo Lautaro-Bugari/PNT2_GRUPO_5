@@ -18,9 +18,9 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
     )
 
     if (itemCarrito) {
-      itemCarrito.cantidad++
-        await guardarCarrito()
-        return
+      itemCarrito.cantidad += cantidadValida
+      await guardarCarrito()
+      return
     }
 
 
@@ -30,8 +30,27 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
   nombre: producto.nombre,
   precio: producto.precio,
   imagen: producto.imagen,
-  cantidad: 1
+  cantidad: cantidadValida
 })
+    await guardarCarrito()
+  }
+
+  const cambiarCantidad = async (productoId, cantidad) => {
+    const itemCarrito = carrito.value.find(i => i.id === productoId)
+    if (!itemCarrito) return
+
+    const nuevaCantidad = Number(cantidad)
+    if (nuevaCantidad < 1) {
+      await eliminarDelCarrito(productoId)
+      return
+    }
+
+    itemCarrito.cantidad = nuevaCantidad
+    await guardarCarrito()
+  }
+
+  const eliminarDelCarrito = async (productoId) => {
+    carrito.value = carrito.value.filter(i => i.id !== productoId)
     await guardarCarrito()
   }
 
@@ -51,10 +70,14 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
         itemsProductos: carrito.value
       })
     })
+
+    if (!response.ok) {
+      throw new Error("No se pudo guardar el carrito")
+    }
   }
 
   const setCarrito = (nuevoCarrito, id) => {
-    carrito.value = nuevoCarrito
+    carrito.value = Array.isArray(nuevoCarrito) ? nuevoCarrito : []
     carritoId.value = id
   }
 
@@ -110,6 +133,8 @@ const obtenerTodosLosCarritos = async () => {
 return {
   carrito,
   agregarAlCarrito,
+  cambiarCantidad,
+  eliminarDelCarrito,
   guardarCarrito,
   setCarrito,
   setCarritoId,
