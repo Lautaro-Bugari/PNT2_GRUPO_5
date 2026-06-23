@@ -30,14 +30,6 @@ const routes = [
     component: productos
   },
   {
-    path: "/productos/:id",
-    component: DetalleProducto
-  },
-  {
-    path: "/carrito",
-    component: Carrito
-  },
-  {
     path: "/login",    
     component: Login
   },
