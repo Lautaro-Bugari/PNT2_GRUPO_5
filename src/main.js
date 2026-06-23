@@ -19,6 +19,9 @@ import PromocionForm from './views/PromocionForm.vue'
 import AdminCategorias from './views/AdminCategorias.vue'
 import CategoriaForm from './views/CategoriaForm.vue'
 import AdminEstadisticas from './views/AdminEstadisticas.vue'
+import Carrito from './views/Carrito.vue'
+import DetalleProducto from './views/DetalleProducto.vue' 
+
 
 const routes = [
   {
