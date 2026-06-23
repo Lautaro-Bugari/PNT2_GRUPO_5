@@ -12,15 +12,12 @@ import PromocionesDetalle from "./views/PromocionesDetalle.vue";
 import ProductoDetalle from "./views/ProductoDetalle.vue";
 import AdminProductos from './views/AdminProductos.vue'
 import ProductoForm from './views/ProductoForm.vue'
-<<<<<<< HEAD
 import AdminPedidos from "./views/AdminPedidos.vue";
-=======
 import MisPedidos from './views/MisPedidos.vue'
 import AdminPromociones from './views/AdminPromociones.vue'
 import PromocionForm from './views/PromocionForm.vue'
 import AdminCategorias from './views/AdminCategorias.vue'
 import CategoriaForm from './views/CategoriaForm.vue'
->>>>>>> origin/main
 
 const routes = [
   {
@@ -43,16 +40,14 @@ const routes = [
     path: "/pedido/:idPedido",
     component: Confirmacion
   },
-<<<<<<< HEAD
   {
     path: "/admin/usuarios",
     component: Admin
-=======
-      {
+  },
+  {
     path: '/mis-pedidos',
     name: 'MisPedidos',
     component: MisPedidos
->>>>>>> origin/main
   },
     {
     path: "/promociones/:promocionId",
@@ -77,13 +72,12 @@ const routes = [
     name: "ProductoEditar",
     component: ProductoForm
   },
-<<<<<<< HEAD
   {
     path: "/admin/pedidos",
     name: "AdminPedidos",
     component: AdminPedidos
-=======
-    {
+  },
+  {
     path: '/admin/promociones',
     name: 'AdminPromociones',
     component: AdminPromociones
@@ -112,7 +106,6 @@ const routes = [
     path: '/categoria/editar/:id',
     name: 'CategoriaEditar',
     component: CategoriaForm
->>>>>>> origin/main
   }
 
 ];
