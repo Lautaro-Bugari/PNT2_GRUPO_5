@@ -21,8 +21,6 @@ const goHome = () => {
 const goProductos = () => {
     router.push('/productos');
 };
-
-
 </script>
 
 <template>
@@ -34,22 +32,46 @@ const goProductos = () => {
         📦 Productos
     </button>
   </div>
-    <div>
-      <button @click="router.push('/checkout')" :disabled="route.path === '/checkout'">
-        🛒 Carrito {{ storeCarrito.getCantidadTotal }}
-      </button>
-    </div>
-    <div>
-      <p v-if="authStore.usuarioLogueado !== null">
-        {{ authStore.usuarioLogueado.nombre }}
-        <img :src="authStore.usuarioLogueado.avatar" width="50"
-/>
-      </p>
-      <button v-if="authStore.usuarioLogueado !== null" @click="authStore.logout">
-        🚪 Cerrar sesión
-      </button>
+
+  <div>
+    <button @click="router.push('/checkout')" :disabled="route.path === '/checkout'">
+      🛒 Carrito {{ storeCarrito.getCantidadTotal }}
+    </button>
+    <button v-if="authStore.usuarioLogueado" 
+      @click="router.push('/mis-pedidos')" 
+      :disabled="route.path === '/mis-pedidos'">
+      Mis Pedidos
+    </button>
+  </div>
+
+  <div v-if="authStore.esAdmin">
+    <button 
+      @click="router.push('/admin/productos')" 
+      :disabled="route.path === '/admin/productos'"
+    >
+      ⚙️ Admin Productos
+    </button>
+    <button 
+      @click="router.push('/admin/promociones')" 
+      :disabled="route.path === '/admin/promociones'"
+    >
+      🎯 Admin Promociones
+    </button>
+    <button @click="router.push('/admin/categorias')" :disabled="route.path === '/admin/categorias'">
+  🏷️ Admin Categorías
+</button>
+  </div>
+
+  <div>
+    <p v-if="authStore.usuarioLogueado !== null">
+      {{ authStore.usuarioLogueado.nombre }}
+      <img :src="authStore.usuarioLogueado.avatar" width="50" />
+    </p>
+    <button v-if="authStore.usuarioLogueado !== null" @click="authStore.logout">
+      🚪 Cerrar sesión
+    </button>
     <button v-else @click="router.push({path:'/login',query:{redirect: route.path}})">
-        🔑 Iniciar sesión
-      </button>
-    </div>
+      🔑 Iniciar sesión
+    </button>
+  </div>
 </template>

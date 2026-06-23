@@ -96,7 +96,7 @@ const irALogin = () => {
       <div v-for="producto in productosFiltrados" :key="producto.id" class="tarjeta-producto">
         <div class="contenedor-imagen">
           <img 
-            :src="producto.imagen || 'https://via.placeholder.com/400'"
+            :src="producto.imagen || 'https://picsum.photos/400/300'"
             width="400"
             alt="Imagen de producto"
             class="imagen-producto"
@@ -113,7 +113,7 @@ const irALogin = () => {
         </div>
       </div>
     </div>
-  </div>
+      </div>
 </template>
 
 <style scoped>

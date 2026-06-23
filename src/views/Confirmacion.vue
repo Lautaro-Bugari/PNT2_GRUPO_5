@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue"
+import { computed, ref, onMounted } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { useStorePedidos } from "../stores/storePedidos"
 import { useAuthStore } from "../stores/authStore"
@@ -9,8 +9,31 @@ const router = useRouter()
 const storePedidos = useStorePedidos()
 const authStore = useAuthStore()
 
-const idPedido = computed(() => route.params.idPedido)
-const pedido = computed(() => storePedidos.obtenerPedido(idPedido.value))
+const idPedido = ref(null)
+const pedido = ref(null)
+const cargando = ref(true)
+const error = ref('')
+
+onMounted(async () => {
+      if (!authStore.usuarioLogueado) {
+    router.push({ path: "/login", query: { redirect:  `/pedido/${route.params.idPedido}` } })
+    return
+  }
+  idPedido.value = route.params.idPedido
+  try {
+    const pedidoEncontrado = await storePedidos.obtenerPedido(idPedido.value)
+    if (pedidoEncontrado) {
+      pedido.value = pedidoEncontrado
+    } else {
+      error.value = "Pedido no encontrado"
+    }
+  } catch (err) {
+    console.error(err)
+    error.value = "Error al cargar el pedido"
+  } finally {
+    cargando.value = false
+  }
+})
 
 const estados = ["Recibido", "Preparando", "En camino", "Listo para retirar"]
 
@@ -19,9 +42,15 @@ const indexEstadoActual = computed(() => {
   return estados.indexOf(pedido.value.estadoActual)
 })
 
-const cambiarEstado = (nuevoEstado) => {
-  if (pedido.value) {
-    storePedidos.actualizarEstadoPedido(pedido.value.idPedido, nuevoEstado)
+// cambio de estado para verificación
+const cambiarEstado = async (nuevoEstado) => {
+  if (!pedido.value) return
+  try {
+    await storePedidos.actualizarEstadoPedido(pedido.value.idPedido, nuevoEstado)
+    pedido.value.estadoActual = nuevoEstado
+  } catch (error) {
+    console.error('Error al cambiar estado:', error)
+    alert('No se pudo actualizar el estado')
   }
 }
 
@@ -40,6 +69,15 @@ const formatearFecha = (fechaStr) => {
 
 <template>
   <div class="confirmacion-container">
+
+      <div v-if="cargando">Cargando pedido...</div>
+
+    <div v-else-if="error" class="pedido-no-encontrado">
+      <h2>⚠️ {{ error }}</h2>
+      <p>No se pudo localizar el pedido con ID #{{ idPedido }}.</p>
+      <button class="btn btn-primary" @click="router.push('/')">Volver al Inicio</button>
+    </div>
+
     <div v-if="!pedido" class="pedido-no-encontrado">
       <h2>⚠️ Pedido no encontrado</h2>
       <p>No se pudo localizar el pedido con ID #{{ idPedido }}.</p>
@@ -72,7 +110,8 @@ const formatearFecha = (fechaStr) => {
             <div class="step-label">{{ estado }}</div>
           </div>
         </div>
-        <div class="simulador-estados">
+        <!-- Controles de simulación de estado para testing -->
+        <div v-if="authStore.esAdmin" class="simulador-estados">
           <span>🛠️ Cambiar estado para verificar tracking:</span>
           <div class="btn-group-sim">
             <button 

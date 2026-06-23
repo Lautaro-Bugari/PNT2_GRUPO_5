@@ -1,53 +1,44 @@
 import { defineStore } from "pinia"
+import { useStoreCarrito } from "./storeCarrito"
 
-import { useStoreCarrito }from "./storeCarrito"
+const url = "https://6a14f50691ff9a63de0731e9.mockapi.io/api/carts"
 
-const url ="https://6a14f50691ff9a63de0731e9.mockapi.io/api/carts"
-
-export const useAuthStore =
-defineStore('auth', {
-
+export const useAuthStore = defineStore('authStore', {
   state: () => ({
-
     usuarioLogueado: null
-
   }),
 
+  getters: {
+    esAdmin: (state) => {
+      return state.usuarioLogueado?.admin === true
+    }
+  },
+
   actions: {
-
     async setUsuario(user) {
-
       this.usuarioLogueado = user
-
-      const storeCarrito =useStoreCarrito()
-
-      const response =await fetch(url)
-
-      const carritos =await response.json()
-
-      let carritoGuardado =carritos.find(c => c.userId === user.id)
+      const storeCarrito = useStoreCarrito()
+      const response = await fetch(url)
+      const carritos = await response.json()
+      let carritoGuardado = carritos.find(c => c.userId === user.id)
 
       if (!carritoGuardado) {
-        carritoGuardado =
-          await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json"},
-            body: JSON.stringify({
-              userId: user.id,
-              itemsProductos: []
-            })}).then(res => res.json())
+        carritoGuardado = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: user.id,
+            itemsProductos: []
+          })
+        }).then(res => res.json())
       }
       storeCarrito.setCarrito(carritoGuardado.itemsProductos, carritoGuardado.id)
     },
 
     async logout() {
       const storeCarrito = useStoreCarrito()
-      storeCarrito.vaciarCarrito()
-
+      storeCarrito.limpiarCarrito()
       this.usuarioLogueado = null
-
     }
-
   }
-
 })

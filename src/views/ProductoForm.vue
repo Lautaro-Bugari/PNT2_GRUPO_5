@@ -2,10 +2,14 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStoreProducto } from '../stores/storeProducto'
+import { useAuthStore } from '../stores/authStore'
+import { useStoreCategoria } from '../stores/storeCategoria'
 
+const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 const storeProducto = useStoreProducto()
+const storeCategoria = useStoreCategoria()
 
 const esEdicion = computed(() => !!route.params.id)
 const categorias = ref([])
@@ -23,11 +27,10 @@ const form = ref({
 
 const cargarCategorias = async () => {
   try {
-    const res = await fetch('http://localhost:8000/categorias')
-    const data = await res.json()
-    categorias.value = data.data || []
+    categorias.value = await storeCategoria.getAll()
   } catch (error) {
     console.error('Error cargando categorías:', error)
+    categorias.value = []
   }
 }
 
@@ -48,6 +51,15 @@ const cargarProducto = async () => {
 }
 
 onMounted(async () => {
+   if (!authStore.usuarioLogueado) {
+    router.push({ path: "/login", query: { redirect: "/admin/productos" } })
+    return
+  }
+
+  if (!authStore.esAdmin) {
+    router.push({ path: "/" })
+    return
+  }
   await cargarCategorias()
   await cargarProducto()
   cargando.value = false

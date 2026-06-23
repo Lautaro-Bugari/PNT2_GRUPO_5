@@ -61,6 +61,14 @@ const irALogin = () => {
     }
   })
 }
+
+const irADetalle = (producto) => {
+  const esPromocion = producto.productosIncluidos || producto.categorias
+  const ruta = esPromocion
+    ? `/promociones/${producto.id}`
+    : `/producto/${producto.id}`
+  router.push(ruta)
+}
 </script>
 
 <template>
@@ -84,25 +92,27 @@ const irALogin = () => {
     <h2>Ofertas</h2>
     <div v-for="promocion in promos" :key="promocion.id">
       <img 
-        :src="promocion.imagen || 'https://via.placeholder.com/400'"
+        :src="promocion.imagen || 'https://picsum.photos/400/300'"
         width="400"
         alt="Imagen de promoción"
       >
       <h3>{{ promocion.nombre }}</h3>
       <p>Precio: ${{ promocion.precio }}</p>
       <button @click="verificarLogin(promocion)">🛒 Agregar al carrito</button>
+      <button @click="irADetalle(promocion)">🔍 Ver detalles</button>
     </div>
 
     <h2>Novedades</h2>
     <div v-for="novedad in novedades" :key="novedad.id">
       <img 
-        :src="novedad.imagen || 'https://via.placeholder.com/400'"
+        :src="novedad.imagen || 'https://picsum.photos/400/300'"
         width="400"
         alt="Imagen de producto"
       >
       <h3>{{ novedad.nombre }}</h3>
       <p>Precio: ${{ novedad.precio }}</p>
       <button @click="verificarLogin(novedad)">🛒 Agregar al carrito</button>
+      <button @click="irADetalle(novedad)">🔍 Ver detalles</button>
     </div>
   </div>
 </template>
