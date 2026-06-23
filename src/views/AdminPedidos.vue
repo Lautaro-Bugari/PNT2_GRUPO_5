@@ -2,16 +2,18 @@
 import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import { useStorePedidos } from "../stores/storePedidos"
+import { useAuthStore } from '../stores/authStore'
 
 const storePedidos = useStorePedidos()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const listaPedidos = ref([])
 const cargando = ref(true)
 
 const cargarPedidos = async () => {
     try {
-    const data = await storePedidos.getPedidos()
+    const data = await storePedidos.obtenerPedidos()
     if (data) {
         listaPedidos.value = data
     } else {

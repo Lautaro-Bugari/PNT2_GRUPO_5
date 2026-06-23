@@ -105,7 +105,10 @@ export const useStorePedidos = defineStore("storePedidos", () => {
       const pedido = await obtenerPedido(idPedido)
       if (!pedido) throw new Error("Pedido no encontrado")
 
-      const response = await fetch(`${API_URL}/${pedido.id}`, {
+         console.log("Pedido completo:", pedido)
+         console.log("ID de MockAPI:", pedido.id)
+
+      const response = await fetch(`${API_URL}/${idPedido}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...pedido, estadoActual: nuevoEstado })

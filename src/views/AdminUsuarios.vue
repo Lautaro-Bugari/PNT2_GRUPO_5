@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useStoreCarrito } from "../stores/storeCarrito";
+import { useAuthStore } from '../stores/authStore'
+import { useRouter } from 'vue-router'
 
 const storeCarrito = useStoreCarrito();
 const users = "https://6a14f50691ff9a63de0731e9.mockapi.io/api/users"
@@ -9,6 +11,8 @@ const usuarioSeleccionado = ref(null);
 const carritoUsuario = ref(null);
 const mostrarFormularioCrear = ref(false);
 const usuarioAEditar = ref(null);
+const authStore = useAuthStore()
+const router = useRouter()
 
 const cargarUsuarios = async () => {
   try {
