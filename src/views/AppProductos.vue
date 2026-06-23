@@ -18,7 +18,7 @@ let ProductoSeleccionado = null
 const categoriaSeleccionada = ref("Todos")
 
 onMounted(async () => {
-  productos.value = storeProducto.getProductos
+  productos.value = await storeProducto.getProductos()
 })
 
 const categorias = computed(() => {
@@ -51,11 +51,27 @@ const productosFiltrados = computed(() => {
 
 const verificarLogin = (producto) => {
   if (!authStore.usuarioLogueado) {
-    ProductoSeleccionado = producto.id
+    ProductoSeleccionado = producto
     avisoLoginVisible.value = true
     return
   }
   storeCarrito.agregarAlCarrito(producto)
+}
+
+const irADetalle = (producto) => {
+  const esPromocion = producto.productosIncluidos && producto.productosIncluidos.length > 0
+  const ruta = esPromocion
+    ? `/promociones/${producto.id}`
+    : `/producto/${producto.id}`
+  router.push(ruta)
+}
+
+const irALogin = () => {
+  const ruta =
+    productoSeleccionado?.productosIncluidos ||
+    productoSeleccionado?.categorias
+      ? `/promociones/${productoSeleccionado.id}`
+      : `/producto/${productoSeleccionado.id}`
 }
 </script>
 
@@ -72,15 +88,7 @@ const verificarLogin = (producto) => {
     <AvisoLogin 
       v-if="avisoLoginVisible"
       @cerrar="avisoLoginVisible = false"
-      @login="
-       const ruta = productoSeleccionado?.productosIncluidos || productoSeleccionado?.categorias
-          ? `/promociones/${productoSeleccionado.id}`
-          : `/producto/${productoSeleccionado.id}`;
-        router.push({
-          path: '/login',
-          query: { redirect: ruta }
-        });
-      "
+      @login="irALogin"
     />
 
     <div>
@@ -94,6 +102,7 @@ const verificarLogin = (producto) => {
         <p>{{ producto.categoria?.nombre || (producto.categorias?.length ? producto.categorias.map(c => c.nombre).join(', ') : 'Sin categoría') }}</p>
         <strong>${{ producto.precio }}</strong>
         <button @click="verificarLogin(producto)">🛒 Agregar al carrito</button>
+        <button @click="irADetalle(producto)" class="btn-detalle">🔍 Ver detalles</button>
       </div>
     </div>
   </div>
