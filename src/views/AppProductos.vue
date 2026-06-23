@@ -4,7 +4,9 @@ import { useStoreCarrito } from "../stores/storeCarrito"
 import AvisoLogin from "./AvisoLogin.vue"
 import { useAuthStore } from '../stores/authStore'
 import { useRouter } from 'vue-router'
+import { useStoreProducto } from "../stores/storeProducto"
 
+const storeProducto = useStoreProducto()
 const router = useRouter()
 const authStore = useAuthStore()
 const storeCarrito = useStoreCarrito()
@@ -12,287 +14,265 @@ const storeCarrito = useStoreCarrito()
 const productos = ref([])
 const busqueda = ref("")
 const avisoLoginVisible = ref(false)
-let idProductoSeleccionado = null
+let ProductoSeleccionado = null
 const categoriaSeleccionada = ref("Todos")
 
-const url = "https://www.mockachino.com/9d6594f6-711f-4c/productos"
-
 onMounted(async () => {
-  const response = await fetch(url)
-  const data = await response.json()
-  productos.value = data.productos
+  productos.value = await storeProducto.getProductos()
 })
 
 const categorias = computed(() => {
-  const lista = productos.value.map(producto => producto.categoria)
+  // Solo productos simples tienen 'categoria' (objeto con nombre)
+  const lista = productos.value
+    .map(p => p.categoria?.nombre)
   return ["Todos", ...new Set(lista)]
 })
 
 const productosFiltrados = computed(() => {
-  if (categoriaSeleccionada.value === "Todos" && busqueda.value === "") return productos.value
+  if (categoriaSeleccionada.value === "Todos" && busqueda.value === "") 
+    return productos.value
+
   return productos.value.filter(producto => {
-    const coincideBusqueda =
-      producto.nombre.toLowerCase().includes(busqueda.value.toLowerCase()) ||
-      producto.categoria.toLowerCase().includes(busqueda.value.toLowerCase())
-    const coincideCategoria =
-      categoriaSeleccionada.value === "Todos" || producto.categoria === categoriaSeleccionada.value
-    return coincideBusqueda && coincideCategoria
+    const coincideCategoria = 
+      categoriaSeleccionada.value === "Todos" ||
+      producto.categoria?.nombre === categoriaSeleccionada.value ||
+      (producto.categorias && producto.categorias.some(c => c.nombre === categoriaSeleccionada.value))
+
+    const texto = busqueda.value.toLowerCase()
+    const coincideBusqueda = 
+      producto.nombre.toLowerCase().includes(texto) ||
+      (producto.categoria?.nombre && producto.categoria.nombre.toLowerCase().includes(texto)) ||
+      (producto.categorias && producto.categorias.some(c => c.nombre.toLowerCase().includes(texto)))
+
+    return coincideCategoria && coincideBusqueda
+
   })
 })
 
 const verificarLogin = (producto) => {
   if (!authStore.usuarioLogueado) {
-    idProductoSeleccionado = producto.id
+    ProductoSeleccionado = producto
     avisoLoginVisible.value = true
     return
   }
   storeCarrito.agregarAlCarrito(producto)
 }
 
-const irAlDetalle = (id) => {
-  router.push(`/productos/${id}`)
+const irADetalle = (producto) => {
+  const esPromocion = producto.productosIncluidos && producto.productosIncluidos.length > 0
+  const ruta = esPromocion
+    ? `/promociones/${producto.id}`
+    : `/producto/${producto.id}`
+  router.push(ruta)
+}
+
+const irALogin = () => {
+  const ruta =
+    productoSeleccionado?.productosIncluidos ||
+    productoSeleccionado?.categorias
+      ? `/promociones/${productoSeleccionado.id}`
+      : `/producto/${productoSeleccionado.id}`
 }
 </script>
 
 <template>
-  <div class="productos-container">
-    <h1>Productos</h1>
-
-    <div class="filtros-barra">
-      <input
-        v-model="busqueda"
-        placeholder="🔍 Buscar producto..."
-        class="input-busqueda"
-      />
+  <div class="contenedor-catalogo">
+    <h1 class="titulo-catalogo">Productos</h1>
+    
+    <div class="barra-filtros">
+      <input v-model="busqueda" placeholder="Buscar producto..." class="input-busqueda">
       <select v-model="categoriaSeleccionada" class="select-categoria">
         <option v-for="categoria in categorias" :key="categoria">
           {{ categoria }}
         </option>
       </select>
     </div>
-
-    <AvisoLogin
+    <AvisoLogin 
       v-if="avisoLoginVisible"
       @cerrar="avisoLoginVisible = false"
-      @login="router.push({
-        path: '/login',
-        query: { redirect: `/productos/${idProductoSeleccionado}` }
-      })"
+      @login="irALogin"
     />
-
     <div class="grilla-productos">
-      <div
-        v-for="producto in productosFiltrados"
-        :key="producto.id"
-        class="tarjeta"
-        :class="{ 'sin-stock': !producto.hayStock }"
-      >
-        <!-- Imagen clickeable al detalle -->
-        <div class="tarjeta-imagen-wrap" @click="irAlDetalle(producto.id)">
-          <img :src="producto.imagen" :alt="producto.nombre" class="tarjeta-imagen" />
-          <span v-if="!producto.hayStock" class="badge-sin-stock">SIN STOCK</span>
-          <span v-if="producto.esOferta" class="badge-oferta">🔥 OFERTA</span>
+      <div v-for="producto in productosFiltrados" :key="producto.id" class="tarjeta-producto">
+        <div class="contenedor-imagen">
+          <img 
+            :src="producto.imagen || 'https://picsum.photos/400/300'"
+            width="400"
+            alt="Imagen de producto"
+            class="imagen-producto"
+          >
         </div>
-
-        <div class="tarjeta-body">
-          <p class="tarjeta-categoria">{{ producto.categoria }}</p>
-          <h3 class="tarjeta-nombre" @click="irAlDetalle(producto.id)">
-            {{ producto.nombre }}
-          </h3>
-          <strong class="tarjeta-precio">${{ producto.precio.toLocaleString("es-AR") }}</strong>
-
-          <div class="tarjeta-acciones">
-            <button class="btn btn-detalle" @click="irAlDetalle(producto.id)">
-              🔍 Ver detalle
-            </button>
-            <button
-              v-if="producto.hayStock"
-              class="btn btn-agregar"
-              @click="verificarLogin(producto)"
-            >
-              🛒 Agregar
-            </button>
+        <div class="info-producto">
+          <h3 class="nombre-producto">{{ producto.nombre }}</h3>
+          <p class="categoria-producto">{{ producto.categoria?.nombre || (producto.categorias?.length ? producto.categorias.map(c => c.nombre).join(', ') : 'Sin categoría') }}</p>
+          <strong class="precio-producto">${{ producto.precio }}</strong>
+          <div class="acciones-producto">
+            <button @click="verificarLogin(producto)" class="btn-carrito">🛒 Agregar al carrito</button>
+            <button @click="irADetalle(producto)" class="btn-detalle">🔍 Ver detalles</button>
           </div>
         </div>
       </div>
     </div>
-
-    <p v-if="productosFiltrados.length === 0" class="sin-resultados">
-      No se encontraron productos con ese criterio.
-    </p>
-  </div>
+      </div>
 </template>
 
 <style scoped>
-.productos-container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 24px 20px;
-  font-family: sans-serif;
+.contenedor-catalogo {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
 }
 
-h1 {
-  font-size: 1.8rem;
-  color: #2c3e50;
-  margin-bottom: 20px;
+.titulo-catalogo {
+  font-size: 32px;
+  font-weight: 800;
+  color: #e60000;
+  margin-bottom: 25px;
+  border-bottom: 3px solid #333;
+  padding-bottom: 10px;
 }
 
-.filtros-barra {
+.barra-filtros {
   display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 35px;
 }
 
 .input-busqueda {
   flex: 1;
-  min-width: 200px;
-  padding: 10px 14px;
+  padding: 12px 16px;
+  font-size: 15px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .select-categoria {
-  padding: 10px 14px;
+  padding: 12px 16px;
+  font-size: 15px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  font-size: 1rem;
-  background: #fff;
+  background-color: #fff;
+  cursor: pointer;
+  min-width: 180px;
+}
+
+.input-busqueda:focus, .select-categoria:focus {
+  outline: none;
+  border-color: #e60000;
+  box-shadow: 0 0 0 3px rgba(230, 0, 0, 0.1);
 }
 
 .grilla-productos {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
 }
 
-.tarjeta {
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+.tarjeta-producto {
+  background: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
   overflow: hidden;
-  background: #fff;
-  transition: box-shadow 0.2s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.tarjeta:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+.tarjeta-producto:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
 }
 
-.tarjeta.sin-stock {
-  opacity: 0.65;
-}
-
-.tarjeta-imagen-wrap {
-  position: relative;
-  cursor: pointer;
-}
-
-.tarjeta-imagen {
+.contenedor-imagen {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: 220px;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.imagen-producto {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-.badge-sin-stock {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  background: #e74c3c;
-  color: #fff;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-
-.badge-oferta {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #f39c12;
-  color: #fff;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-
-.tarjeta-body {
-  padding: 14px;
+.info-producto {
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex-grow: 1;
 }
 
-.tarjeta-categoria {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #888;
-  margin: 0 0 4px;
-}
-
-.tarjeta-nombre {
-  font-size: 0.95rem;
-  color: #2c3e50;
-  margin: 0 0 8px;
-  cursor: pointer;
+.nombre-producto {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2b2b2b;
+  margin: 0 0 8px 0;
   line-height: 1.3;
 }
 
-.tarjeta-nombre:hover {
-  color: #3498db;
+.categoria-producto {
+  font-size: 13px;
+  color: #777;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  letter-spacing: 0.5px;
 }
 
-.tarjeta-precio {
-  font-size: 1.1rem;
-  color: #2c3e50;
-  margin-bottom: 14px;
+.precio-producto {
+  font-size: 22px;
+  color: #333;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: block;
 }
 
-.tarjeta-acciones {
+.acciones-producto {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
   margin-top: auto;
 }
 
-.btn {
-  flex: 1;
-  padding: 8px 6px;
+.btn-carrito {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background-color: #e60000;
   border: none;
   border-radius: 6px;
-  font-size: 0.82rem;
-  font-weight: bold;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.2s;
+}
+
+.btn-carrito:hover {
+  background-color: #c90000;
 }
 
 .btn-detalle {
-  background: #ecf0f1;
-  color: #2c3e50;
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  background-color: #f1f1f1;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .btn-detalle:hover {
-  background: #dfe6e9;
-}
-
-.btn-agregar {
-  background: #2ecc71;
+  background-color: #333;
   color: #fff;
-}
-
-.btn-agregar:hover {
-  background: #27ae60;
-}
-
-.sin-resultados {
-  text-align: center;
-  color: #888;
-  margin-top: 40px;
-  font-size: 1rem;
+  border-color: #333;
 }
 </style>

@@ -1,5 +1,7 @@
 import { defineStore } from "pinia"
 import { ref, computed } from "vue"
+import { useStoreProducto } from "./storeProducto"
+
 
 const url = "https://6a14f50691ff9a63de0731e9.mockapi.io/api/carts"
 
@@ -8,10 +10,9 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
   const carrito = ref([])
   const carritoId = ref(null)
 
-  const agregarAlCarrito = async (producto, cantidad = 1) => {
+  
 
-    const cantidadValida = Math.max(1, Number(cantidad) || 1)
-
+  const agregarAlCarrito = async (producto) => {
     const itemCarrito = carrito.value.find(
       i => i.id === producto.id
     )
@@ -54,10 +55,13 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
   }
 
   const guardarCarrito = async () => {
-
     if (!carritoId.value) return
-
-    const response = await fetch(`${url}/${carritoId.value}`, {
+    const storeProducto = useStoreProducto()
+    const productosSinStock = await storeProducto.getIdProductosSinStock()
+    const carritoActualizado = carrito.value.filter(item => !productosSinStock.includes(item.id))
+    carrito.value = carritoActualizado
+    
+    await fetch(`${url}/${carritoId.value}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -81,12 +85,27 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
     carritoId.value = id
   }
 
-  const vaciarCarrito = async () => {
+const vaciarCarrito = async () => {
+  const id = carritoId.value
+  if (!id) {
     carrito.value = []
-    await guardarCarrito()
+    return
   }
 
-  const limpiarSesion = () => {
+  try {
+    await fetch(`${url}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemsProductos: [] })
+    })
+    carrito.value = []
+  } catch (error) {
+    console.error("Error al vaciar carrito en MockAPI:", error)
+    carrito.value = []
+  }
+}
+
+    const limpiarCarrito = () => {
     carrito.value = []
     carritoId.value = null
   }
@@ -100,9 +119,19 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
 
   })
 
+const obtenerTodosLosCarritos = async () => {
+  let resultadoCarritos = []
+  try {
+    const response = await fetch(url)
+    resultadoCarritos = await response.json()
+  } catch (error) {
+    console.error("Error al traer todos los carritos del store:", error)
+  }
+  return resultadoCarritos
+}
+
 return {
   carrito,
-  carritoId,
   agregarAlCarrito,
   cambiarCantidad,
   eliminarDelCarrito,
@@ -110,9 +139,9 @@ return {
   setCarrito,
   setCarritoId,
   vaciarCarrito,
-  limpiarSesion,
-  getCantidadTotal
-
+  limpiarCarrito,
+  getCantidadTotal,
+  obtenerTodosLosCarritos
 }
 
 })
