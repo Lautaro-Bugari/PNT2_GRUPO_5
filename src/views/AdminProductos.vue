@@ -66,14 +66,14 @@ const reactivar = async (id) => {
 </script>
 
 <template>
-  <div >
-    <div >
+  <div class="admin-container">
+    <div class="header">
       <h1>Gestión de Productos</h1>
       <button @click="irACrear" class="btn-primary">+ Nuevo Producto</button>
     </div>
 
-    <div v-if="cargando" >Cargando productos...</div>
-    <div v-else-if="error">{{ error }}</div>
+    <div v-if="cargando" class="loading">Cargando productos...</div>
+    <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else>
       <table>
         <thead>
@@ -99,7 +99,7 @@ const reactivar = async (id) => {
                 {{ producto.habilitado ? 'Activo' : 'Inactivo' }}
               </span>
             </td>
-            <td >
+            <td class="acciones">
               <button @click="verDetalle(producto.id)" class="btn-ver" title="Ver">👁️</button>
               <button @click="irAEditar(producto.id)" class="btn-editar" title="Editar">✏️</button>
               <button
@@ -128,3 +128,145 @@ const reactivar = async (id) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.admin-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.btn-primary {
+  background: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.btn-primary:hover {
+  background: #45a049;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px 15px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+  color: #333;
+}
+
+tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.badge-activo {
+  color: #27ae60;
+  font-weight: bold;
+  background: #eafaf1;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.badge-inactivo {
+  color: #e74c3c;
+  font-weight: bold;
+  background: #fdf2f2;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.acciones {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.acciones button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+
+.acciones button:hover {
+  opacity: 0.8;
+}
+
+.btn-ver {
+  background: #3498db;
+  color: white;
+}
+
+.btn-editar {
+  background: #f39c12;
+  color: white;
+}
+
+.btn-desactivar {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-reactivar {
+  background: #2ecc71;
+  color: white;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+.error {
+  text-align: center;
+  padding: 20px;
+  color: #e74c3c;
+  background: #fdf2f2;
+  border-radius: 4px;
+  border: 1px solid #f5c6cb;
+}
+
+.text-center {
+  text-align: center;
+  padding: 20px;
+  color: #7f8c8d;
+  font-style: italic;
+}
+</style>
