@@ -58,11 +58,8 @@ const desactivarPromocion = async (id) => {
   try {
     const response = await fetch(`${API_URL}/promociones/${id}`)
     if (!response.ok) throw new Error('Promoción no encontrada')
-    const data = await response.json()
-    return {
-      ...data,
-      precioFinal: data.descuento ? data.precio * (1 - data.descuento / 100) : data.precio
-    }
+    const result  = await response.json()
+    return result
   } catch (error) {
     console.error('Error en getPromocionById:', error)
     return null

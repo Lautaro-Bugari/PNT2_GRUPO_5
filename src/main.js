@@ -10,6 +10,8 @@ import Confirmacion from "./views/Confirmacion.vue";
 import Admin from "./views/AdminUsuarios.vue";
 import PromocionesDetalle from "./views/PromocionesDetalle.vue";
 import ProductoDetalle from "./views/ProductoDetalle.vue";
+import AdminProductos from './views/AdminProductos.vue'
+import ProductoForm from './views/ProductoForm.vue'
 
 const routes = [
   {
@@ -44,6 +46,25 @@ const routes = [
     path: "/producto/:productoId",
     component: ProductoDetalle
   },
+<<<<<<< HEAD
+=======
+  {
+      path: '/admin/productos',
+    name: 'AdminProductos',
+    component: AdminProductos
+  },
+  {
+    path: '/producto/nuevo',
+    name: 'ProductoNuevo',
+    component: ProductoForm
+  },
+  {
+    path: '/producto/editar/:id',
+    name: 'ProductoEditar',
+    component: ProductoForm
+  }
+
+>>>>>>> origin/main
 ];
 
 const router = createRouter({
