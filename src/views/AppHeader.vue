@@ -21,6 +21,11 @@ const goHome = () => {
 const goProductos = () => {
     router.push('/productos');
 };
+
+const ejecutarLogout = async () => {
+  await authStore.logout()
+  router.push("/")
+}
 </script>
 
 <template>
@@ -50,7 +55,7 @@ const goProductos = () => {
             <span class="user-name">{{ authStore.usuarioLogueado.nombre }}</span>
             <img :src="authStore.usuarioLogueado.avatar" width="32" height="32" class="user-avatar" />
           </div>
-          <button v-if="authStore.usuarioLogueado" @click="authStore.logout" class="nav-btn logout-btn">
+          <button v-if="authStore.usuarioLogueado" @click="ejecutarLogout" class="nav-btn logout-btn">
             🚪 Cerrar sesión
           </button>
           <button v-else @click="router.push({path:'/login',query:{redirect: route.path}})" class="nav-btn login-btn">
