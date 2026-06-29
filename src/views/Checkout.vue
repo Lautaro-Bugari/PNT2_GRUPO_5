@@ -142,7 +142,7 @@ const confirmarPedido = async () => {
       const nuevoStock = productoCompleto.stock - cantidadRequerida
       await storeProducto.updateProducto(productoId, {
         ...productoCompleto,   
-         stock: nuevoStock          })
+        stock: nuevoStock          })
 }
 
     const nuevoPedido = await storePedidos.crearPedido(
@@ -156,16 +156,19 @@ const confirmarPedido = async () => {
     alert(`❌ ${error.message}`)
   }
 }
+
+const eliminarDelCarrito = async (item) => {
+  await storeCarrito.eliminarProducto(item.id)
+}
 </script>
 
 <template>
   <div class="checkout-container">
     <h1>Checkout de Compra</h1>
-    <!-- 1. Flujo alternativo: Carrito Vacío -->
     <div v-if="storeCarrito.carrito.length === 0 || !storeCarrito.carrito" class="carrito-vacio">
       <p>Tu carrito está vacío. ¡Visitá nuestro catálogo para empezar a comprar!</p>
       <button class="btn btn-primary" @click="router.push('/productos')">
-        📦 Ver Productos
+          📦 Ver Productos
       </button>
     </div>
     <div v-else class="checkout-content">
@@ -179,7 +182,7 @@ const confirmarPedido = async () => {
               <th>Cantidad</th>
               <th>Precio Pack</th>
               <th>Subtotal</th>
-            </tr>
+              <th>Acciones</th> </tr>
           </thead>
           <tbody>
             <tr v-for="item in storeCarrito.carrito" :key="item.id">
@@ -194,6 +197,11 @@ const confirmarPedido = async () => {
               </td>
               <td>${{ item.precio.toLocaleString() }}</td>
               <td>${{ (item.precio * item.cantidad).toLocaleString() }}</td>
+              <td class="td-acciones">
+                <button class="btn btn-delete" @click="eliminarDelCarrito(item)">
+                  ❌ Eliminar
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -280,330 +288,282 @@ const confirmarPedido = async () => {
 </template>
 
 <style scoped>
-.confirmacion-container {
-  max-width: 1200px;
-  margin: 40px auto;
-  padding: 0 20px;
-  color: #2b2b2b;
+.checkout-container {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0px;
+  padding: 60px 40px;
+  background-color: #ffffff;
+  box-sizing: border-box;
 }
 
-h1 {
-  font-size: 30px;
+.checkout-container h1 {
+  font-size: 42px;
+  color: #111111;
   font-weight: 800;
-  color: #e60000;
-  margin: 0 0 10px 0;
+  margin: 0px 0px 40px 0px;
+  border-bottom: 3px solid #111111;
+  padding-bottom: 15px;
 }
 
-h2 {
+.carrito-vacio {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.carrito-vacio p {
   font-size: 20px;
-  font-weight: 700;
-  color: #333;
-  margin-top: 0;
-  border-bottom: 2px solid #333;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-}
-
-.pedido-no-encontrado {
-  text-align: center;
-  padding: 50px 30px;
-  background-color: #fff5f5;
-  border-radius: 12px;
-  border: 1px solid #f8d7da;
-  color: #b52a37;
-  max-width: 500px;
-  margin: 40px auto;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-.exito-encabezado {
-  text-align: center;
-  background-color: #ffffff;
-  padding: 40px 30px;
-  border-radius: 12px;
-  border: 1px solid #eaeaea;
-  margin-bottom: 30px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-.icono-exito {
-  font-size: 3.5rem;
-  display: block;
-  margin-bottom: 15px;
-}
-
-.nro-tracking {
-  font-size: 1.3rem;
-  color: #333;
-  margin: 8px 0;
-}
-
-.nro-tracking strong {
   color: #e60000;
+  margin-bottom: 25px;
 }
 
-.fecha-pedido {
-  font-size: 0.95rem;
-  color: #666;
-}
-
-.tracking-seccion {
-  background-color: #ffffff;
-  border: 1px solid #eaeaea;
-  padding: 30px;
-  border-radius: 12px;
-  margin-bottom: 30px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-.stepper {
-  display: flex;
-  justify-content: space-between;
-  position: relative;
-  margin: 40px 0;
-}
-
-.stepper::before {
-  content: '';
-  position: absolute;
-  top: 22px;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background-color: #eaeaea;
-  z-index: 1;
-}
-
-.step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-  flex: 1;
-}
-
-.step-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background-color: #fff;
-  border: 4px solid #eaeaea;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: #999;
-  font-size: 15px;
-  transition: all 0.3s ease;
-}
-
-.step-label {
-  margin-top: 12px;
-  font-size: 14px;
-  color: #666;
-  font-weight: 600;
-  text-align: center;
-}
-
-.step-completed .step-circle {
-  background-color: #28a745;
-  border-color: #28a745;
-  color: #fff;
-}
-
-.step-completed .step-label {
-  color: #28a745;
-}
-
-.step-active .step-circle {
-  background-color: #e60000;
-  border-color: #e60000;
-  color: #fff;
-  box-shadow: 0 0 0 5px rgba(230, 0, 0, 0.15);
-}
-
-.step-active .step-label {
-  color: #e60000;
-  font-weight: 700;
-}
-
-.simulador-estados {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px dashed #ddd;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.simulador-estados span {
-  font-size: 13px;
-  color: #777;
-  font-weight: 700;
-}
-
-.btn-group-sim {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.btn-sim {
-  padding: 6px 14px;
-  font-size: 13px;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  color: #555;
-  cursor: pointer;
-  border-radius: 6px;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-
-.btn-sim:hover:not(:disabled) {
-  background-color: #f1f1f1;
-  border-color: #333;
-}
-
-.btn-sim:disabled {
-  background-color: #333;
-  color: #fff;
-  border-color: #333;
-  cursor: default;
-}
-
-.detalles-grid {
+.checkout-content {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 40px;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  align-items: start;
+  width: 100%;
 }
 
-@media (max-width: 992px) {
-  .detalles-grid {
-    grid-template-columns: 1fr;
-  }
+.carrito-seccion, .facturacion-seccion {
+  background: #ffffff;
+  box-sizing: border-box;
 }
 
-.productos-seccion, .facturacion-seccion {
-  background-color: #ffffff;
-  border: 1px solid #eaeaea;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+.carrito-seccion h2, .facturacion-seccion h2 {
+  font-size: 26px;
+  color: #222222;
+  font-weight: 700;
+  margin: 0px 0px 25px 0px;
+  border-bottom: 2px solid #e60000;
+  padding-bottom: 10px;
 }
 
-.tabla-productos {
+.tabla-carrito {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
-.tabla-productos th {
-  background-color: #f8f9fa;
-  color: #444;
+.tabla-carrito th {
+  text-align: left;
+  padding: 15px 10px;
+  border-bottom: 2px solid #111111;
+  font-size: 16px;
+  color: #444444;
   font-weight: 700;
-  font-size: 14px;
-  text-transform: uppercase;
-  padding: 12px;
-  border-bottom: 2px solid #eaeaea;
 }
 
-.tabla-productos td {
-  padding: 15px 12px;
+.tabla-carrito td {
+  padding: 20px 10px;
   border-bottom: 1px solid #eee;
-  font-size: 15px;
+  font-size: 16px;
+  color: #222222;
+  vertical-align: middle;
 }
 
 .td-img {
-  width: 60px;
-  text-align: center;
+  width: 90px;
 }
 
 .img-producto {
-  width: 45px;
-  height: 45px;
+  width: 80px;
+  height: 80px;
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid #eee;
 }
 
-.totales-caja {
-  background-color: #fdfdfd;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #eaeaea;
+.td-cantidades {
+  white-space: nowrap;
 }
 
-.totales-caja p {
-  margin: 10px 0;
+.btn-cant {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #ccc;
+  background-color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.btn-cant:hover {
+  background-color: #f5f5f5;
+}
+
+.cantidad-num {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0px 12px;
+  display: inline-block;
+  min-width: 20px;
+  text-align: center;
+}
+
+.totales-desglose {
+  margin-top: 30px;
+  padding: 25px;
+  background-color: #ffffff;
+  border: 1px solid #e60000;
+  border-radius: 8px;
+}
+
+.totales-desglose p {
+  font-size: 18px;
+  margin: 0px 0px 12px 0px;
+  color: #444444;
   display: flex;
   justify-content: space-between;
-  font-size: 15px;
-  color: #555;
 }
 
-.total-final {
-  border-top: 2px dashed #eaeaea;
-  padding-top: 15px;
-  margin-top: 15px !important;
-  font-size: 20px !important;
+.totales-desglose p .envio-gratis {
+  color: #2ed573;
   font-weight: 800;
+}
+
+.totales-desglose p.total-final {
+  font-size: 24px;
   color: #e60000;
+  font-weight: 800;
+  border-top: 2px dashed #e60000;
+  padding-top: 15px;
+  margin-top: 15px;
 }
 
-.datos-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.dato-item {
-  display: flex;
-  flex-direction: column;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-}
-
-.dato-label {
-  font-size: 13px;
-  color: #777;
-  font-weight: 700;
-}
-
-.dato-valor {
-  font-size: 16px;
-  color: #2b2b2b;
-  font-weight: 500;
-  margin-top: 4px;
-}
-
-.pedido-acciones {
-  margin-top: 35px;
-}
-
-.btn {
-  padding: 14px 20px;
-  border: none;
+.alerta-bloqueo {
+  background-color: #fff5f5;
+  border: 2px solid #e60000;
+  color: #e60000;
+  padding: 20px;
   border-radius: 8px;
-  cursor: pointer;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+
+.formulario-facturacion {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
   font-size: 16px;
   font-weight: 600;
-  text-align: center;
-  transition: background-color 0.2s, transform 0.1s;
+  color: #333333;
+}
+
+.form-group input[type="text"], .form-group select {
+  padding: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: inherit;
+  box-sizing: border-box;
   width: 100%;
 }
 
-.btn:active {
-  transform: scale(0.99);
+.form-group input:focus, .form-group select:focus {
+  outline: none;
+  border-color: #e60000;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 5px 0px;
+}
+
+.radio-group label {
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.error-msg {
+  color: #e60000;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn {
+  padding: 14px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn:disabled {
+  background-color: #cccccc !important;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .btn-primary {
   background-color: #e60000;
-  color: #fff;
+  color: #ffffff;
 }
 
-.btn-primary:hover {
+.btn-danger {
+  background-color: #2b2b2b;
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background-color: #111111;
+}
+
+.btn-success {
+  background-color: #e60000;
+  color: #ffffff;
+}
+
+.btn-success:hover {
   background-color: #c90000;
+}
+
+.btn-delete {
+  background-color: #ffffff;
+  color: #e60000;
+  border: 1px solid #e60000;
+  padding: 8px 14px;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.btn-delete:hover {
+  background-color: #e60000;
+  color: #ffffff;
+  opacity: 1;
+}
+
+.btn-submit {
+  width: 100%;
+  margin-top: 15px;
+  font-size: 18px;
+  padding: 16px;
 }
 </style>

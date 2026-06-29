@@ -107,6 +107,11 @@ const obtenerTodosLosCarritos = async () => {
   return resultadoCarritos
 }
 
+const eliminarProducto = async (productoId) => {
+  carrito.value = carrito.value.filter(item => item.id != productoId)
+  await guardarCarrito()
+}
+
 return {
   carrito,
   agregarAlCarrito,
@@ -116,7 +121,8 @@ return {
   vaciarCarrito,
   limpiarCarrito,
   getCantidadTotal,
-  obtenerTodosLosCarritos
+  obtenerTodosLosCarritos,
+  eliminarProducto
 }
 
 })
