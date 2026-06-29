@@ -10,28 +10,29 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
   const carrito = ref([])
   const carritoId = ref(null)
 
-  
-
   const agregarAlCarrito = async (producto) => {
     const itemCarrito = carrito.value.find(
       i => i.id === producto.id
     )
 
     if (itemCarrito) {
-      itemCarrito.cantidad++
-        await guardarCarrito()
+      const storeProducto = useStoreProducto()
+      const productoCompleto = await storeProducto.getProductoById(producto.id)
+      if (itemCarrito.cantidad >= productoCompleto.stock) {
+        alert(`⚠️ No hay más stock del producto. Máximo disponible: ${productoCompleto.stock} unidades.`)
         return
+      }
+      itemCarrito.cantidad++
+      await guardarCarrito()
+      return
     }
-
-
-    carrito.value.push(
-{
-  id: producto.id,
-  nombre: producto.nombre,
-  precio: producto.precio,
-  imagen: producto.imagen,
-  cantidad: 1
-})
+    carrito.value.push({
+      id: producto.id,
+      nombre: producto.nombre,
+      precio: producto.precio,
+      imagen: producto.imagen,
+      cantidad: 1
+    })
     await guardarCarrito()
   }
 

@@ -36,8 +36,20 @@ const faltanteEnvioGratis = computed(() => {
 })
 
 const incrementarCantidad = async (item) => {
-  item.cantidad++
-  await storeCarrito.guardarCarrito()
+  try {
+    const productoCompleto = await storeProducto.getProductoById(item.id)
+    if (!productoCompleto) {
+      alert("❌ Producto no encontrado.")
+      return
+    }
+    if (item.cantidad >= productoCompleto.stock) {
+      alert(`⚠️ No hay más stock del producto. Máximo disponible: ${productoCompleto.stock} unidades.`)
+      return
+    }
+    item.cantidad++
+    await storeCarrito.guardarCarrito()
+  } catch (error) {
+  }
 }
 
 const decrementarCantidad = async (item) => {
