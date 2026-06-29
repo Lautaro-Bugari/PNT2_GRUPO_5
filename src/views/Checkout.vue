@@ -39,16 +39,31 @@ const faltanteEnvioGratis = computed(() => {
 
 const incrementarCantidad = async (item) => {
   try {
-    const productoCompleto = await storeProducto.getProductoById(item.id)
-    if (!productoCompleto) {
+        let productoCompleto = await storeProducto.getProductoById(item.id)
+      if (!productoCompleto) {
+        productoCompleto = await storePromos.getPromocionById(item.id)
+      }
+      if (!productoCompleto) {
       alert("❌ Producto no encontrado.")
       return
-    }
-    if (item.cantidad >= productoCompleto.stock) {
+      }
+      const nuevaCantidad = item.cantidad + 1
+    if(productoCompleto.productosIncluidos?.length ){
+        const stockInsuficiente = productoCompleto.productosIncluidos.some(p => {
+        const cantidadRequeridaPorUnidad = p.PromoProducto?.cantidad || 1
+        const totalRequerido = cantidadRequeridaPorUnidad * nuevaCantidad
+        return p.stock < totalRequerido
+        })
+        if(stockInsuficiente)
+        {      
+          alert(`⚠️ No hay más stock del producto: ${productoCompleto.nombre}.`)
+          return
+        }
+      }else if (nuevaCantidad > productoCompleto.stock) {
       alert(`⚠️ No hay más stock del producto. Máximo disponible: ${productoCompleto.stock} unidades.`)
       return
     }
-    item.cantidad++
+    item.cantidad = nuevaCantidad
     await storeCarrito.guardarCarrito()
   } catch (error) {
   }
