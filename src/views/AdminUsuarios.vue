@@ -206,9 +206,9 @@ onMounted(async () => {
               </span>
             </td>
             <td class="acciones-tabla">
-              <button @click="mostrarDetalles(user)" class="boton-accion boton-ver">🔍 Detalle</button>
-              <button @click="iniciarEdicion(user)" class="boton-accion boton-editar">✏️ Editar</button>
-              <button @click="eliminarUsuario(user.id, user.username)" class="boton-accion boton-eliminar">🗑️ Eliminar</button>
+              <button @click="mostrarDetalles(user)" class="boton-accion boton-ver">👁️</button>
+              <button @click="iniciarEdicion(user)" class="boton-accion boton-editar">✏️</button>
+              <button @click="eliminarUsuario(user.id, user.username)" class="boton-accion boton-eliminar">⛔</button>
             </td>
           </tr>
         </tbody>
@@ -275,10 +275,19 @@ onMounted(async () => {
 }
 
 .boton-primario {
-  background-color: #e60000;
+  background: #4CAF50;
   color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background 0.3s;
 }
-.boton-primario:hover { background-color: #c90000; }
+.boton-primario:hover {
+  background: #45a049;
+}
 
 .boton-secundario {
   background-color: #ffffff;
@@ -378,16 +387,50 @@ onMounted(async () => {
   transition: all 0.2s;
 }
 
-.boton-ver:hover {
-  background-color: #f1f1f1; border-color: #333;
+.boton-accion.boton-ver{
+  background: #3498db;
+  color: white;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin: 0 4px;
+}
+.boton-accion.boton-editar {
+  background: #f39c12;
+  color: white;
+    width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin: 0 4px;
 }
 
-.boton-editar:hover {
-  background-color: #fff3cd; border-color: #ffc107; color: #856404;
-}
-
-.boton-eliminar:hover {
-  background-color: #fff5f5; border-color: #f5c2c2; color: #dc3545;
+.boton-accion.boton-eliminar {
+  background: #e74c3c;
+  color: white;
+    width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .contenedor-formulario {

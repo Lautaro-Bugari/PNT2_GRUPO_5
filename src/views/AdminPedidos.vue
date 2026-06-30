@@ -119,7 +119,6 @@ onMounted(async () => {
     max-width: 1200px;
     margin: 40px auto;
     padding: 0 20px;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
     color: #2b2b2b;
 }
 
@@ -216,10 +215,9 @@ onMounted(async () => {
     white-space: nowrap;
 }
 
-.boton-ver:hover {
-    background-color: #fff5f5;
-    border-color: #e60000;
-    color: #e60000;
+.boton-accion.boton-ver {
+    background: #3498db;
+    color: white;
 }
 
 .estado-mensaje, .pedidos-vacios {

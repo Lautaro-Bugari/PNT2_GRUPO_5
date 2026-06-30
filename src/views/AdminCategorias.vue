@@ -66,7 +66,7 @@ const irAEditar = (id) => router.push(`/categoria/editar/${id}`)
             <td>{{ cat.nombre }}</td>
             <td>{{ cat.descripcion || 'Sin descripción' }}</td>
             <td class="acciones">
-              <button @click="irAEditar(cat.id)" class="btn-editar">✏️ Editar</button>
+              <button @click="irAEditar(cat.id)" class="btn-editar">✏️</button>
             </td>
           </tr>
           <tr v-if="categorias.length === 0">
