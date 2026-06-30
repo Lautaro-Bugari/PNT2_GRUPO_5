@@ -1,8 +1,7 @@
 <script setup>
- import AppHeader from "./views/AppHeader.vue"
- import { useStoreCarrito } from "./stores/storeCarrito"
-
- const storeCarrito = useStoreCarrito()
+import AppHeader from "./views/AppHeader.vue"
+import { useStoreCarrito } from "./stores/storeCarrito"
+const storeCarrito = useStoreCarrito()
 </script>
 
 <template>
