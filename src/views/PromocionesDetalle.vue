@@ -21,6 +21,7 @@ onMounted(async () => {
     const data = await storePromos.getPromocionById(id)
     if (data) {
       promocion.value = data
+      console.log("🚀 ~ promocion:", promocion.value)
     } else {
       error.value = 'Promoción no encontrada'
     }
@@ -84,20 +85,12 @@ const irALogin = () => {
 
         <div class="bloque-precios">
 
-          <div class="precio-contenedor">
-
-            <span
-              v-if="promocion.descuento && promocion.descuento > 0"
-              class="precio-original"
-            >
-              ${{ promocion.precio }}
-            </span>
-
-            <span class="precio-final">
-              ${{ promocion.precioFinal || promocion.precio }}
-            </span>
-
-          </div>
+            <div class="precio-contenedor">
+          <p v-if="promocion.descuento" class="precio-original">
+            ${{ (promocion.precio / (1 - promocion.descuento / 100)).toFixed(2) }}
+          </p>
+          <p class="precio-tag">Precio ahora: ${{ promocion.precio }}</p>
+        </div>
 
           <p
             v-if="promocion.descuento && promocion.descuento > 0"
