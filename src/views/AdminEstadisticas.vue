@@ -4,6 +4,31 @@ import { useRouter } from 'vue-router'
 import { useStoreProducto } from '../stores/storeProducto'
 import { useStorePedidos } from '../stores/storePedidos'
 import { useAuthStore } from '../stores/authStore'
+import { Bar, Line, Doughnut } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement
+} from 'chart.js'
+
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement
+)
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -14,23 +39,14 @@ const cargando = ref(true)
 const productos = ref([])
 const pedidos = ref([])
 
-// Resumen
 const totalProductos = computed(() => productos.value.length)
 const totalPedidos = computed(() => pedidos.value.length)
 const ingresosTotales = computed(() => {
   return pedidos.value.reduce((sum, p) => sum + (p.totalFinal || 0), 0)
 })
 
-// Productos con menos stock (top 10)
-const productosMenosStock = computed(() => {
-  return [...productos.value]
-    .filter(p => p.stock !== undefined)
-    .sort((a, b) => a.stock - b.stock)
-    .slice(0, 10)
-})
-
-// Productos más vendidos (top 10)
-const productosMasVendidos = computed(() => {
+// 1. Gráfico: Top 10 Más Vendidos (Barras)
+const chartMasVendidos = computed(() => {
   const mapa = {}
   pedidos.value.forEach(pedido => {
     ;(pedido.items || []).forEach(item => {
@@ -40,57 +56,119 @@ const productosMasVendidos = computed(() => {
       mapa[id] += cantidad
     })
   })
+  
   const ordenados = Object.entries(mapa)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
-  return ordenados.map(([id, cantidad]) => {
+
+  const labels = ordenados.map(([id]) => {
     const prod = productos.value.find(p => p.id == id)
-    return {
-      id,
-      nombre: prod?.nombre || `Producto ${id}`,
-      cantidad
-    }
+    return prod?.nombre || `Prod ${id}`
   })
+  const data = ordenados.map(([, cantidad]) => cantidad)
+
+  return {
+    labels,
+    datasets: [{
+      label: 'Unidades Vendidas',
+      backgroundColor: '#3498db', 
+      borderRadius: 5,
+      data
+    }]
+  }
 })
 
-// Ventas por mes (últimos 6 meses)
-const ventasPorMes = computed(() => {
+// 2. Gráfico: Evolución de Ventas por Mes 
+const chartVentasMes = computed(() => {
   const meses = {}
   const hoy = new Date()
   for (let i = 5; i >= 0; i--) {
     const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1)
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
     meses[key] = 0
   }
   pedidos.value.forEach(p => {
-    if (!p.fecha) return
-    const fecha = new Date(p.fecha)
-    const key = `${fecha.getFullYear()}-${String(fecha.getMonth()+1).padStart(2,'0')}`
+    const fechaOrigen = p.fecha || p.createdAt
+    if (!fechaOrigen) return
+    
+    const fechaObj = new Date(fechaOrigen)
+    if (isNaN(fechaObj.getTime())) return
+    const anio = fechaObj.getFullYear()
+    const mes = String(fechaObj.getMonth() + 1).padStart(2, '0')
+    const key = `${anio}-${mes}`
     if (meses.hasOwnProperty(key)) {
-      meses[key] += p.totalFinal || 0
+      meses[key] += Number(p.totalFinal) || 0
     }
   })
-  const entries = Object.entries(meses)
-  const max = Math.max(...entries.map(([,v]) => v), 1)
-  return entries.map(([mes, total]) => ({ mes, total, max }))
+  return {
+    labels: Object.keys(meses),
+    datasets: [{
+      label: 'Ingresos ($)',
+      borderColor: '#2ecc71', 
+      backgroundColor: 'rgba(46, 204, 113, 0.1)',
+      tension: 0.3,
+      fill: true,
+      data: Object.values(meses)
+    }]
+  }
 })
 
-// Distribución de estados
-const distribucionEstados = computed(() => {
-  const mapa = {}
+// 3. Gráfico: Estados de Pedidos 
+const chartEstados = computed(() => {
+  const mapa = { 'Recibido': 0, 'Preparando': 0, 'En camino': 0, 'Listo para retirar': 0 }
+  
   pedidos.value.forEach(p => {
     const estado = p.estadoActual || 'Recibido'
-    mapa[estado] = (mapa[estado] || 0) + 1
+    if (mapa.hasOwnProperty(estado)) mapa[estado]++
   })
-  return Object.entries(mapa).map(([estado, count]) => ({ estado, count }))
+
+  return {
+    labels: Object.keys(mapa),
+    datasets: [{
+      backgroundColor: ['#3498db', '#f39c12', '#2ecc71', '#9b59b6'],
+      data: Object.values(mapa)
+    }]
+  }
 })
 
-// Colores para estados
-const coloresEstados = {
-  'Recibido': '#3498db',
-  'Preparando': '#f39c12',
-  'En camino': '#2ecc71',
-  'Listo para retirar': '#9b59b6'
+// 4. Gráfico: Control de Stock Crítico (Barras Horizontales)
+const chartStockCritico = computed(() => {
+  const filtrados = [...productos.value]
+    .filter(p => p.stock !== undefined)
+    .sort((a, b) => a.stock - b.stock)
+    .slice(0, 10)
+
+  return {
+    labels: filtrados.map(p => p.nombre),
+    datasets: [{
+      label: 'Stock Actual',
+      backgroundColor: '#e74c3c',
+      borderRadius: 5,
+      data: filtrados.map(p => p.stock)
+    }]
+  }
+})
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false }
+  }
+}
+
+const chartOptionsDoughnut = {
+  responsive: true,
+  maintainAspectRatio: false
+}
+
+const chartOptionsHorizontal = {
+  responsive: true,
+  maintainAspectRatio: false,
+  indexAxis: 'y',
+  plugins: {
+    legend: { display: false }
+  }
 }
 
 const cargarDatos = async () => {
@@ -119,314 +197,163 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="admin-estadisticas">
-    <h1 class="titulo-admin">📊 Estadísticas del Sistema</h1>
-
-    <div v-if="cargando" class="estado-mensaje">Cargando datos...</div>
-
-    <div v-else>
-      <!-- Tarjetas de resumen -->
-      <div class="tarjetas-resumen">
-        <div class="tarjeta">
-          <span class="tarjeta-icon">📦</span>
-          <div>
-            <div class="tarjeta-valor">{{ totalProductos }}</div>
-            <div class="tarjeta-etiqueta">Productos activos</div>
-          </div>
-        </div>
-        <div class="tarjeta">
-          <span class="tarjeta-icon">🧾</span>
-          <div>
-            <div class="tarjeta-valor">{{ totalPedidos }}</div>
-            <div class="tarjeta-etiqueta">Pedidos totales</div>
-          </div>
-        </div>
-        <div class="tarjeta">
-          <span class="tarjeta-icon">💰</span>
-          <div>
-            <div class="tarjeta-valor">${{ ingresosTotales.toLocaleString() }}</div>
-            <div class="tarjeta-etiqueta">Ingresos totales</div>
-          </div>
+  <div class="dash">
+    <h1 class="titulo">📊 Estadísticas del Sistema</h1>
+    <hr class="linea" />
+    <div class="cards">
+      <div class="card">
+        <div class="icon">📦</div>
+        <div class="info">
+          <span class="num">{{ totalProductos }}</span>
+          <span class="txt">Productos Activos</span>
         </div>
       </div>
-
-      <div class="graficos-grid">
-        <!-- Productos con menos stock -->
-        <div class="grafico-card">
-          <h3>⚠️ Productos con menos stock</h3>
-          <div v-if="productosMenosStock.length === 0" class="sin-datos">
-            No hay productos con stock bajo.
-          </div>
-          <div v-else class="barras">
-            <div v-for="p in productosMenosStock" :key="p.id" class="barra-item">
-              <span class="barra-label">{{ p.nombre }}</span>
-              <div class="barra-contenedor">
-                <div class="barra" :style="{ width: Math.min((p.stock / 100) * 100, 100) + '%' }"></div>
-              </div>
-              <span class="barra-valor">{{ p.stock }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Productos más vendidos -->
-        <div class="grafico-card">
-          <h3>🏆 Productos más vendidos</h3>
-          <div v-if="productosMasVendidos.length === 0" class="sin-datos">
-            No hay ventas registradas.
-          </div>
-          <div v-else class="barras">
-            <div v-for="p in productosMasVendidos" :key="p.id" class="barra-item">
-              <span class="barra-label">{{ p.nombre }}</span>
-              <div class="barra-contenedor">
-                <div class="barra barra-ventas" :style="{ width: Math.min((p.cantidad / productosMasVendidos[0].cantidad) * 100, 100) + '%' }"></div>
-              </div>
-              <span class="barra-valor">{{ p.cantidad }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ventas por mes -->
-        <div class="grafico-card">
-          <h3>📈 Ventas por mes</h3>
-          <div v-if="ventasPorMes.length === 0 || ventasPorMes.every(v => v.total === 0)" class="sin-datos">
-            No hay ventas en los últimos meses.
-          </div>
-          <div v-else>
-            <div v-for="v in ventasPorMes" :key="v.mes" class="barra-item">
-              <span class="barra-label">{{ v.mes }}</span>
-              <div class="barra-contenedor">
-                <div class="barra barra-ventas-mes" :style="{ width: ((v.total / v.max) * 100) + '%' }"></div>
-              </div>
-              <span class="barra-valor">${{ v.total.toLocaleString() }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Distribución de estados -->
-        <div class="grafico-card">
-          <h3>📌 Estado de pedidos</h3>
-          <div v-if="distribucionEstados.length === 0" class="sin-datos">
-            No hay pedidos.
-          </div>
-          <div v-else class="estados-lista">
-            <div v-for="e in distribucionEstados" :key="e.estado" class="estado-item">
-              <span class="estado-badge" :style="{ backgroundColor: coloresEstados[e.estado] || '#999' }">
-                {{ e.estado }}
-              </span>
-              <span class="estado-count">{{ e.count }} pedido{{ e.count !== 1 ? 's' : '' }}</span>
-            </div>
-          </div>
+      <div class="card">
+        <div class="icon">📄</div>
+        <div class="info">
+          <span class="num">{{ totalPedidos }}</span>
+          <span class="txt">Pedidos Totales</span>
         </div>
       </div>
-
-      <div class="acciones">
-        <button @click="cargarDatos" class="btn-actualizar">🔄 Actualizar datos</button>
+      <div class="card">
+        <div class="icon">💰</div>
+        <div class="info">
+          <span class="num">${{ ingresosTotales.toLocaleString('es-AR', { minimumFractionDigits: 2 }) }}</span>
+          <span class="txt">Ingresos Totales</span>
+        </div>
       </div>
+    </div>
+    <div v-if="!cargando" class="graficos">
+      
+      <div class="grafico">
+        <h3>⚠️ Productos con menos stock</h3>
+        <div class="canvas-holder">
+          <Bar :data="chartStockCritico" :options="chartOptionsHorizontal" />
+        </div>
+      </div>
+      <div class="grafico">
+        <h3>🏆 Productos más vendidos</h3>
+        <div class="canvas-holder">
+          <Bar :data="chartMasVendidos" :options="chartOptions" />
+        </div>
+      </div>
+      <div class="grafico">
+        <h3>📈 Evolución de Ventas por Mes</h3>
+        <div class="canvas-holder">
+          <Line :data="chartVentasMes" :options="chartOptions" />
+        </div>
+      </div>
+      <div class="grafico">
+        <h3>📌 Estado de pedidos</h3>
+        <div class="canvas-holder dona">
+          <Doughnut :data="chartEstados" :options="chartOptionsDoughnut" />
+        </div>
+      </div>
+    </div>
+    <div v-else class="loader">
+      <p>Cargando datos...</p>
     </div>
   </div>
 </template>
 
 <style scoped>
-.admin-estadisticas {
-  max-width: 1200px;
-  margin: 40px auto;
-  padding: 0 20px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  color: #2b2b2b;
+.dash {
+  padding: 20px;
+  font-family: sans-serif;
 }
 
-.titulo-admin {
-  font-size: 34px;
-  font-weight: 800;
-  color: #e60000;
-  margin-bottom: 30px;
-  border-bottom: 3px solid #333;
-  padding-bottom: 12px;
+.titulo {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 10px;
 }
 
-.estado-mensaje {
-  text-align: center;
-  padding: 50px;
-  font-size: 16px;
-  font-weight: 500;
-  background-color: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #eaeaea;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+.linea {
+  border: 0;
+  height: 1px;
+  background: #ddd;
+  margin-bottom: 25px;
 }
 
-.tarjetas-resumen {
+.cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
-  margin-bottom: 35px;
+  margin-bottom: 30px;
 }
 
-.tarjeta {
-  background: #ffffff;
-  border: 1px solid #eaeaea;
-  border-radius: 12px;
-  padding: 20px 25px;
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
-  gap: 18px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  gap: 15px;
 }
 
-.tarjeta-icon {
-  font-size: 2.5rem;
+.icon {
+  font-size: 35px;
 }
 
-.tarjeta-valor {
-  font-size: 28px;
-  font-weight: 800;
-  color: #2b2b2b;
+.info {
+  display: flex;
+  flex-direction: column;
 }
 
-.tarjeta-etiqueta {
+.num {
+  font-size: 24px;
+  font-weight: bold;
+  color: #222;
+}
+
+.txt {
   font-size: 14px;
   color: #777;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
-.graficos-grid {
+.graficos {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 25px;
 }
 
-@media (max-width: 768px) {
-  .graficos-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.grafico-card {
-  background: #ffffff;
-  border: 1px solid #eaeaea;
-  border-radius: 12px;
+.grafico {
+  background: #fff;
   padding: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-.grafico-card h3 {
-  margin-top: 0;
-  margin-bottom: 16px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #333;
-}
-
-.sin-datos {
-  color: #999;
-  font-style: italic;
-  text-align: center;
-  padding: 20px 0;
-}
-
-.barras {
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 15px;
 }
 
-.barra-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.barra-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #333;
-  min-width: 80px;
-  max-width: 120px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.barra-contenedor {
-  flex: 1;
-  height: 20px;
-  background-color: #f1f1f1;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.barra {
-  height: 100%;
-  background-color: #e60000;
-  border-radius: 10px;
-  transition: width 0.4s ease;
-}
-
-.barra-ventas {
-  background-color: #3498db;
-}
-
-.barra-ventas-mes {
-  background-color: #2ecc71;
-}
-
-.barra-valor {
-  font-size: 13px;
-  font-weight: 700;
-  color: #2b2b2b;
-  min-width: 40px;
-  text-align: right;
-}
-
-.estados-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.estado-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-
-.estado-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 13px;
-  color: white;
-}
-
-.estado-count {
-  font-weight: 600;
-  color: #2b2b2b;
-}
-
-.acciones {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.btn-actualizar {
-  background-color: #e60000;
-  color: white;
-  border: none;
-  padding: 12px 30px;
-  border-radius: 8px;
+.grafico h3 {
   font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  color: #444;
+  margin: 0;
+  font-weight: 600;
 }
 
-.btn-actualizar:hover {
-  background-color: #c90000;
+.canvas-holder {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+
+.canvas-holder.dona {
+  height: 260px;
+}
+
+
+.loader {
+  text-align: center;
+  padding: 50px;
+  font-size: 18px;
+  color: #666;
 }
 </style>

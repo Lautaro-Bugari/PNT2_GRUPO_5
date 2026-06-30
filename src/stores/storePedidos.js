@@ -3,7 +3,7 @@ import { ref } from "vue"
 import { useStoreCarrito } from "./storeCarrito"
 import { useAuthStore } from "./authStore"
 
-const API_URL = "https://6a1f458eb79eec0d6cf0a121.mockapi.io/api2/Pedidos"
+const API_URL = "https://6a4411586dba791499abd1e8.mockapi.io/Pedidos"
 
 export const useStorePedidos = defineStore("storePedidos", () => {
   const storeCarrito = useStoreCarrito()
