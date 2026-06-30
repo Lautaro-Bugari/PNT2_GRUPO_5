@@ -111,8 +111,16 @@ const guardar = async () => {
     }
 
 
-    if (data.fechaSalida) data.fechaSalida = new Date(data.fechaSalida).toISOString()
-    if (data.fechaFin) data.fechaFin = new Date(data.fechaFin).toISOString()
+if (data.fechaSalida) {
+    const fecha = new Date(data.fechaSalida);
+    fecha.setDate(fecha.getDate() + 1); // suma un día
+    data.fechaSalida = fecha.toISOString();
+}
+if (data.fechaFin) {
+    const fecha = new Date(data.fechaFin);
+    fecha.setDate(fecha.getDate() + 1);
+    data.fechaFin = fecha.toISOString();
+}
 
     if (esEdicion.value) {
       await storePromos.updatePromocion(data.id, data)
