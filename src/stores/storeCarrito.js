@@ -1,6 +1,7 @@
 import { defineStore } from "pinia"
 import { ref, computed } from "vue"
 import { useStoreProducto } from "./storeProducto"
+import { useStorePromos } from './storePromos'
 
 
 const url = "https://6a14f50691ff9a63de0731e9.mockapi.io/api/carts"
@@ -10,31 +11,69 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
   const carrito = ref([])
   const carritoId = ref(null)
 
-  const agregarAlCarrito = async (producto) => {
-    const itemCarrito = carrito.value.find(
-      i => i.id === producto.id
-    )
-
-    if (itemCarrito) {
+ const agregarAlCarrito = async (producto) => {
       const storeProducto = useStoreProducto()
-      const productoCompleto = await storeProducto.getProductoById(producto.id)
-      if (itemCarrito.cantidad >= productoCompleto.stock) {
-        alert(`⚠️ No hay más stock del producto. Máximo disponible: ${productoCompleto.stock} unidades.`)
-        return
-      }
-      itemCarrito.cantidad++
-      await guardarCarrito()
+      const storePromos = useStorePromos()
+
+  let productoCompleto = await storeProducto.getProductoById(producto.id)
+  let esPromocion = false
+  if (!productoCompleto) {
+    productoCompleto = await storePromos.getPromocionById(producto.id)
+    esPromocion = true
+  }
+  if (!productoCompleto) {
+    alert('❌ Producto no encontrado.')
+    return
+  }
+
+  const itemCarrito = carrito.value.find(i => i.id === producto.id)
+  const nuevaCantidad = itemCarrito ? itemCarrito.cantidad + 1 : 1
+
+  if (esPromocion) {
+    // Verificar stock de cada producto incluido en la promoción
+    const productosIncluidos = productoCompleto.productosIncluidos || []
+    if (productosIncluidos.length === 0) {
+      alert('⚠️ Esta promoción no contiene productos.')
       return
     }
+
+    const stockInsuficiente = productosIncluidos.some(p => {
+      const cantidadPorUnidad = p.PromoProducto?.cantidad || 1
+      const totalRequerido = cantidadPorUnidad * nuevaCantidad
+      return p.stock < totalRequerido
+    })
+
+    if (stockInsuficiente) {
+      const maxUnidades = Math.min(
+        ...productosIncluidos.map(p => 
+          Math.floor(p.stock / (p.PromoProducto?.cantidad || 1))
+        )
+      )
+      alert(`⚠️ Stock insuficiente para la promoción. Solo puedes tener ${maxUnidades} unidades en total.`)
+      return
+    }
+  } else {
+    // Producto simple: verificar stock
+    if (nuevaCantidad > productoCompleto.stock) {
+      alert(`⚠️ No hay suficiente stock. Máximo disponible: ${productoCompleto.stock} unidades.`)
+      return
+    }
+  }
+
+  if (itemCarrito) {
+    itemCarrito.cantidad = nuevaCantidad
+  } else {
     carrito.value.push({
       id: producto.id,
       nombre: producto.nombre,
       precio: producto.precio,
-      imagen: producto.imagen,
+      imagen: producto.imagen || 'https://via.placeholder.com/400',
       cantidad: 1
     })
-    await guardarCarrito()
   }
+
+  await guardarCarrito()
+}
 
   const guardarCarrito = async () => {
     if (!carritoId.value) return

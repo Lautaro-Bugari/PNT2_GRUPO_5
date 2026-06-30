@@ -6,6 +6,7 @@ import AvisoLogin from "./AvisoLogin.vue"
 import { useAuthStore } from '../stores/authStore'
 import { useStoreCarrito } from "../stores/storeCarrito"
 import { useRouter } from 'vue-router'
+import BotonCarrito from "./BotonCarrito.vue"
 
 const promos = ref([])
 const novedades = ref([])
@@ -19,7 +20,6 @@ const router = useRouter()
 
 onMounted(async () => {
   try {
-
     promos.value = await storePromos.getPromociones()
 
     const productosObtenidos = await storeProducto.getProductos()
@@ -34,16 +34,14 @@ onMounted(async () => {
   }
 })
 
-const verificarLogin = (producto) => {
+/* const verificarLogin = (producto) => {
   if (!authStore.usuarioLogueado) {
     productoSeleccionado = producto
-
     avisoLoginVisible.value = true
-    
     return
   }
   storeCarrito.agregarAlCarrito(producto)
-}
+} */
 
 const irALogin = () => {
   const ruta =
@@ -68,6 +66,11 @@ const irADetalle = (producto) => {
     ? `/promociones/${producto.id}`
     : `/producto/${producto.id}`
   router.push(ruta)
+}
+
+const manejarLoginRequerido = (producto) => {
+  productoSeleccionado = producto
+  avisoLoginVisible.value = true
 }
 </script>
 
@@ -96,9 +99,14 @@ const irADetalle = (producto) => {
           class="img-producto"
         >
         <h3>{{ promocion.nombre }}</h3>
-        <p class="precio-tag">Precio: ${{ promocion.precio }}</p>
+        <div class="precio-contenedor">
+          <p v-if="promocion.descuento" class="precio-original">
+            ${{ (promocion.precio / (1 - promocion.descuento / 100)).toFixed(2) }}
+          </p>
+          <p class="precio-tag">Precio ahora: ${{ promocion.precio }}</p>
+        </div>
         <div class="tarjeta-acciones">
-          <button class="btn btn-primary" @click="verificarLogin(promocion)">🛒 Agregar al carrito</button>
+          <BotonCarrito :producto="promocion" @login-required="manejarLoginRequerido(promocion)" />
           <button class="btn btn-secondary" @click="irADetalle(promocion)">🔍 Ver detalles</button>
         </div>
       </div>
@@ -116,7 +124,7 @@ const irADetalle = (producto) => {
         <h3>{{ novedad.nombre }}</h3>
         <p class="precio-tag">Precio: ${{ novedad.precio }}</p>
         <div class="tarjeta-acciones">
-          <button class="btn btn-primary" @click="verificarLogin(novedad)">🛒 Agregar al carrito</button>
+          <BotonCarrito :producto="novedad" @login-required="manejarLoginRequerido" />
           <button class="btn btn-secondary" @click="irADetalle(novedad)">🔍 Ver detalles</button>
         </div>
       </div>
@@ -199,11 +207,25 @@ const irADetalle = (producto) => {
   margin: 0px 0px 10px 0px;
 }
 
+.precio-contenedor {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 20px 0;
+}
+
+.precio-original {
+  font-size: 18px;
+  color: #888;
+  text-decoration: line-through;
+  margin: 0;
+}
+
 .precio-tag {
   font-size: 22px;
-  color: #000000;
+  color: #e60000;
   font-weight: 800;
-  margin: 0px 0px 20px 0px;
+  margin: 0;
 }
 
 .tarjeta-acciones {
@@ -224,15 +246,13 @@ const irADetalle = (producto) => {
   justify-content: center;
 }
 
-.btn-primary {
-  background-color: #e60000;
-  color: white;
-  flex: 2;
-}
-
 .btn-secondary {
   background-color: #f0f0f0;
   color: #333333;
   flex: 1;
+}
+
+.btn-secondary:hover {
+  background-color: #ddd;
 }
 </style>

@@ -22,7 +22,6 @@ onMounted(async () => {
 })
 
 const categorias = computed(() => {
-  // Solo productos simples tienen 'categoria' (objeto con nombre)
   const lista = productos.value
     .map(p => p.categoria?.nombre)
   return ["Todos", ...new Set(lista)]
@@ -45,7 +44,6 @@ const productosFiltrados = computed(() => {
       (producto.categorias && producto.categorias.some(c => c.nombre.toLowerCase().includes(texto)))
 
     return coincideCategoria && coincideBusqueda
-
   })
 })
 
@@ -114,7 +112,14 @@ const irALogin = () => {
         <div class="info-producto">
           <h3 class="nombre-producto">{{ producto.nombre }}</h3>
           <p class="categoria-producto">{{ producto.categoria?.nombre || (producto.categorias?.length ? producto.categorias.map(c => c.nombre).join(', ') : 'Sin categoría') }}</p>
-          <strong class="precio-producto">${{ producto.precio }}</strong>
+          
+          <div class="precio-contenedor">
+            <span v-if="producto.descuento" class="precio-original">
+              ${{ (producto.precio / (1 - producto.descuento / 100)).toFixed(2) }}
+            </span>
+            <span class="precio-producto">${{ producto.precio }}</span>
+          </div>
+          
           <div class="acciones-producto">
             <button @click="verificarLogin(producto)" class="btn-carrito">🛒 Agregar al carrito</button>
             <button @click="irADetalle(producto)" class="btn-detalle">🔍 Ver detalles</button>
@@ -122,7 +127,7 @@ const irALogin = () => {
         </div>
       </div>
     </div>
-      </div>
+  </div>
 </template>
 
 <style scoped>
@@ -234,12 +239,24 @@ const irALogin = () => {
   letter-spacing: 0.5px;
 }
 
+.precio-contenedor {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.precio-original {
+  font-size: 16px;
+  color: #888;
+  text-decoration: line-through;
+}
+
 .precio-producto {
   font-size: 22px;
   color: #333;
   font-weight: 700;
-  margin-bottom: 20px;
-  display: block;
 }
 
 .acciones-producto {

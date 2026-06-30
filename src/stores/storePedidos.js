@@ -60,7 +60,6 @@ export const useStorePedidos = defineStore("storePedidos", () => {
       const usuarioId = authStore.usuarioLogueado?.id || null
       if (!usuarioId) throw new Error("Usuario no autenticado")
 
-      const idPedido = Math.floor(100000 + Math.random() * 900000)
 
       const items = storeCarrito.carrito.map(item => ({
         id: item.id,
@@ -71,7 +70,6 @@ export const useStorePedidos = defineStore("storePedidos", () => {
       }))
 
       const nuevoPedido = {
-        idPedido,
         usuarioId,
         fecha: new Date().toISOString(),
         items,

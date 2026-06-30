@@ -39,8 +39,13 @@ const stockDisponible = computed(() => {
   return promocion.value.productosIncluidos.every(p => p.stock > 0 && p.habilitado)
 })
 
+const sePuedeAgregar = computed(() => {
+  if (!promocion.value) return false
+  return stockDisponible.value && promocion.value.habilitado
+})
+
 const agregarAlCarrito = () => {
-  if (!stockDisponible.value && !promocion.habilitado) return
+  if (!sePuedeAgregar.value) return
 
   if (!authStore.usuarioLogueado) {
     avisoLoginVisible.value = true
@@ -57,7 +62,6 @@ const irALogin = () => {
     }
   })
 }
-
 </script>
 
 <template>
@@ -72,11 +76,17 @@ const irALogin = () => {
       <div class="seccion-info">
         <p class="descripcion-promo"><strong>Descripción:</strong> {{ promocion.descripcion }}</p>
         <div class="bloque-precios">
-          <p class="precio-original"><strong>Precio original:</strong> ${{ promocion.precio }}</p>
-          <div v-if="promocion.descuento && promocion.descuento > 0" class="caja-descuento">
-            <p class="porcentaje-descuento"><strong>Descuento:</strong> <span class="tag-rojo">{{ promocion.descuento }}% OFF</span></p>
-            <p class="precio-final"><strong>Precio final:</strong> ${{ promocion.precioFinal || promocion.precio }}</p>
+          <div class="precio-contenedor">
+            <span v-if="promocion.descuento && promocion.descuento > 0" class="precio-original">
+              ${{ promocion.precio }}
+            </span>
+            <span class="precio-final">
+              ${{ promocion.precioFinal || promocion.precio }}
+            </span>
           </div>
+          <p v-if="promocion.descuento && promocion.descuento > 0" class="porcentaje-descuento">
+            <strong>Descuento:</strong> <span class="tag-rojo">{{ promocion.descuento }}% OFF</span>
+          </p>
         </div>
         <p class="categorias-promo"><strong>Categorías:</strong>
           <span v-for="(cat, idx) in promocion.categorias" :key="idx" class="badge-categoria">
@@ -97,11 +107,11 @@ const irALogin = () => {
       </div>
       <button 
         @click="agregarAlCarrito" 
-        :disabled="!stockDisponible && promocion.habilitado"
+        :disabled="!sePuedeAgregar"
         class="btn-accion-promo"
-        :class="{ 'btn-deshabilitado': !stockDisponible && promocion.habilitado }"
+        :class="{ 'btn-deshabilitado': !sePuedeAgregar }"
       >
-        {{ stockDisponible ? '🛒 Agregar promoción al carrito' : '🚫 No disponible' }}
+        {{ sePuedeAgregar ? '🛒 Agregar promoción al carrito' : '🚫 No disponible' }}
       </button>
     </div>
     <div v-else-if="cargando" class="estado-mensaje cargando">Cargando detalles del combo...</div>
@@ -156,17 +166,29 @@ const irALogin = () => {
   margin: 10px 0;
 }
 
-.precio-original {
-  font-size: 16px;
-  color: #777;
-  text-decoration: line-through;
-  margin: 0 0 10px 0;
+.precio-contenedor {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.caja-descuento {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.precio-original {
+  font-size: 18px;
+  color: #888;
+  text-decoration: line-through;
+}
+
+.precio-final {
+  font-size: 26px;
+  font-weight: 800;
+  color: #e60000;
+}
+
+.porcentaje-descuento {
+  font-size: 16px;
+  color: #555;
+  margin: 8px 0 0 0;
 }
 
 .tag-rojo {
@@ -176,13 +198,6 @@ const irALogin = () => {
   border-radius: 4px;
   font-weight: 700;
   font-size: 14px;
-}
-
-.precio-final {
-  font-size: 26px;
-  font-weight: 800;
-  color: #e60000;
-  margin: 5px 0 0 0;
 }
 
 .badge-categoria {
@@ -274,6 +289,13 @@ const irALogin = () => {
   cursor: not-allowed;
   box-shadow: none;
   border: none;
+}
+
+.btn-deshabilitado {
+  background-color: #cccccc;
+  color: #ffffff;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .estado-mensaje {

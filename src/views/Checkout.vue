@@ -152,30 +152,26 @@ const confirmarPedido = async () => {
     }
 
     // 3. Agrupar manualmente (sumar cantidades por productoId)
-    const agrupado = {}
+     const agrupado = {}
     for (const { productoId, cantidad } of productosADescontar) {
-      if (agrupado[productoId]) {
-        agrupado[productoId] += cantidad
-      } else {
-        agrupado[productoId] = cantidad
-      }
+      agrupado[productoId] = (agrupado[productoId] || 0) + cantidad
     }
 
-    // 4. Validar stock y actualizar cada producto
     for (const [productoId, cantidadRequerida] of Object.entries(agrupado)) {
-      const producto = await storeProducto.getProductoById(productoId) || storePromos
+      const producto = await storeProducto.getProductoById(productoId)
       if (!producto) {
         throw new Error(`Producto con ID ${productoId} no encontrado`)
       }
       if (producto.stock < cantidadRequerida) {
         throw new Error(`Stock insuficiente para "${producto.nombre}" (stock: ${producto.stock}, requerido: ${cantidadRequerida})`)
       }
-      const productoCompleto = await storeProducto.getProductoById(productoId)
-      const nuevoStock = productoCompleto.stock - cantidadRequerida
+      const nuevoStock = producto.stock - cantidadRequerida
       await storeProducto.updateProducto(productoId, {
-        ...productoCompleto,   
-        stock: nuevoStock          })
-}
+        ...producto,
+        stock: nuevoStock
+      })
+    }
+
 
     const nuevoPedido = await storePedidos.crearPedido(
       form.value,
