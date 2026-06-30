@@ -114,7 +114,7 @@ const decrementar = async () => {
 <template>
   <div class="boton-carrito-wrapper">
     <div v-if="estaEnCarrito" class="control-cantidad">
-      <button @click="decrementar" class="btn-cantidad" :disabled="cantidad <= 1">−</button>
+      <button @click="decrementar" class="btn-cantidad" >−</button>
       <span class="cantidad-texto">{{ cantidad }}</span>
       <button @click="incrementar" class="btn-cantidad" :disabled="!puedeIncrementar">+</button>
     </div>
