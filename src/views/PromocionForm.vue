@@ -166,14 +166,12 @@ const cancelar = () => router.push('/admin/promociones')
         <label>Fecha Fin *</label>
         <input v-model="form.fechaFin" type="date" required  :min="form.fechaSalida"/>
       </div>
-
             <div class="campo checkbox">
         <label>
             Habilitada
           <input v-model="form.habilitado" type="checkbox" />
         </label>
       </div>
-
       <div class="campo productos-section">
         <label>Productos incluidos</label>
         <div v-if="productosDisponibles.length === 0" class="sin-productos">
@@ -204,8 +202,6 @@ const cancelar = () => router.push('/admin/promociones')
           </div>
         </div>
       </div>
-
-
       <div class="acciones">
         <button type="submit" class="btn-guardar">💾 Guardar</button>
         <button type="button" class="btn-cancelar" @click="cancelar">❌ Cancelar</button>
@@ -223,6 +219,13 @@ const cancelar = () => router.push('/admin/promociones')
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
+
+.form-container h1 {
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  color: #e60000;
+  font-weight: 800;
+  margin-top: 0;
+}
 .campo {
   margin-bottom: 15px;
 }
@@ -237,6 +240,7 @@ const cancelar = () => router.push('/admin/promociones')
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  box-sizing: border-box;
 }
 .campo textarea {
   min-height: 80px;
@@ -248,33 +252,66 @@ const cancelar = () => router.push('/admin/promociones')
   font-weight: normal;
 }
 
-/* Estilos para selector de productos */
 .productos-section {
   border-top: 1px solid #eee;
   padding-top: 15px;
   margin-top: 10px;
 }
+
 .producto-selector {
-  display: flex;
+display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap; 
+  gap: 15px;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.producto-selector:hover {
+  background-color: #fafafa;
+  border-color: #ddd;
+}
+
+.producto-check {
+display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 0;
-  border-bottom: 1px solid #f5f5f5;
-}
-.producto-check {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: normal;
+  font-weight: 600;
   cursor: pointer;
+  white-space: normal;
   flex: 1;
+  min-width: 200px;
+  margin: 0;
 }
+
+.producto-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .cantidad-input {
-  width: 80px;
-  padding: 4px 8px;
+  width: 120px;
+  padding: 6px 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  box-sizing: border-box;
+  text-align: center;
+  flex-shrink: 0; /* Mantiene su tamaño horizontal siempre */
 }
+
+.cantidad-input:focus {
+  border-color: #e60000;
+  outline: none;
+}
+
 .sin-productos {
   color: #7f8c8d;
   font-style: italic;
@@ -299,6 +336,7 @@ const cancelar = () => router.push('/admin/promociones')
 }
 .btn-cancelar {
   background: #ccc;
+  color: #333;
   padding: 10px 20px;
   border: none;
   border-radius: 4px;

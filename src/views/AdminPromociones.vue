@@ -148,6 +148,13 @@ const reactivar = async (id) => {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.btn-primary:hover {
+  background: #45a049;
 }
 table {
   width: 100%;
@@ -161,13 +168,22 @@ th, td {
 th {
   background: #f2f2f2;
 }
+
 .badge-activo {
-  color: green;
+  color: #27ae60;
   font-weight: bold;
+  background: #eafaf1;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
 }
 .badge-inactivo {
-  color: red;
+  color: #e74c3c;
   font-weight: bold;
+  background: #fdf2f2;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
 }
 .acciones button {
   margin: 0 4px;

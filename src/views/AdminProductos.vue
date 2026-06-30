@@ -196,6 +196,7 @@ tbody tr:hover {
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.8rem;
+  
 }
 
 .badge-inactivo {
