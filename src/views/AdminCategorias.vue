@@ -30,10 +30,12 @@ onMounted(async () => {
     router.push({ path: '/login', query: { redirect: '/admin/categorias' } })
     return
   }
+
   if (!authStore.esAdmin) {
     router.push({ path: '/' })
     return
   }
+
   await cargarCategorias()
 })
 
@@ -42,16 +44,25 @@ const irAEditar = (id) => router.push(`/categoria/editar/${id}`)
 </script>
 
 <template>
-  <div class="admin-container">
-    <div class="header">
-      <h1>Gestión de Categorías</h1>
-      <button class="btn-primary" @click="irACrear">+ Nueva Categoría</button>
+  <div class="contenedor-admin">
+    <h1 class="titulo-admin">Panel de Administración: Categorías</h1>
+
+    <div class="barra-acciones">
+      <button class="boton boton-primario" @click="irACrear">
+        + Nueva Categoría
+      </button>
     </div>
 
-    <div v-if="cargando" class="loading">Cargando...</div>
-    <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else>
-      <table>
+    <div v-if="cargando" class="estado-mensaje">
+      Cargando categorías...
+    </div>
+
+    <div v-else-if="error" class="estado-mensaje error">
+      {{ error }}
+    </div>
+
+    <div v-else class="tabla-contenedor">
+      <table class="tabla-admin">
         <thead>
           <tr>
             <th>ID</th>
@@ -60,17 +71,33 @@ const irAEditar = (id) => router.push(`/categoria/editar/${id}`)
             <th>Acciones</th>
           </tr>
         </thead>
+
         <tbody>
           <tr v-for="cat in categorias" :key="cat.id">
-            <td>{{ cat.id }}</td>
-            <td>{{ cat.nombre }}</td>
-            <td>{{ cat.descripcion || 'Sin descripción' }}</td>
-            <td class="acciones">
-              <button @click="irAEditar(cat.id)" class="btn-editar">✏️</button>
+            <td>#{{ cat.id }}</td>
+
+            <td class="nombre-destacado">
+              {{ cat.nombre }}
+            </td>
+
+            <td>
+              {{ cat.descripcion || 'Sin descripción' }}
+            </td>
+
+            <td class="acciones-tabla">
+              <button
+                class="boton-accion boton-editar"
+                @click="irAEditar(cat.id)"
+              >
+                ✏️
+              </button>
             </td>
           </tr>
+
           <tr v-if="categorias.length === 0">
-            <td colspan="4" class="text-center">No hay categorías registradas.</td>
+            <td colspan="4" class="estado-mensaje">
+              No hay categorías registradas.
+            </td>
           </tr>
         </tbody>
       </table>
@@ -79,110 +106,105 @@ const irAEditar = (id) => router.push(`/categoria/editar/${id}`)
 </template>
 
 <style scoped>
-.admin-container {
-  padding: 20px;
+
+
+.contenedor-admin {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 40px auto;
+  padding: 0 20px;
+  color: #2b2b2b;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.titulo-admin {
+  font-size: 34px;
+  font-weight: 800;
+  color: #e60000;
+  margin-bottom: 25px;
+  border-bottom: 3px solid #333;
+  padding-bottom: 12px;
+}
+
+.barra-acciones {
   margin-bottom: 20px;
 }
 
-.header h1 {
-  margin: 0;
-  color: #2c3e50;
+.boton {
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
 }
 
-.btn-primary {
+.boton-primario {
   background: #4CAF50;
   color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  transition: background 0.3s;
 }
-
-.btn-primary:hover {
+.boton-primario:hover {
   background: #45a049;
 }
 
-table {
+
+
+.tabla-contenedor {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #eaeaea;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.tabla-admin {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-th, td {
-  border: 1px solid #ddd;
-  padding: 12px 15px;
-  text-align: left;
+.tabla-admin th {
+  background: #f8f9fa;
+  padding: 14px;
+  text-transform: uppercase;
+  font-size: 13px;
+  border-bottom: 2px solid #eee;
 }
 
-th {
-  background-color: #f2f2f2;
-  font-weight: bold;
-  color: #333;
+.tabla-admin td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
 }
 
-tbody tr:hover {
-  background-color: #f9f9f9;
+.nombre-destacado {
+  font-weight: 700;
 }
 
-.acciones {
+
+.acciones-tabla {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
-.acciones button {
-  padding: 6px 12px;
+.boton-accion {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: bold;
-  transition: opacity 0.2s;
+  color: white;
 }
 
-.acciones button:hover {
-  opacity: 0.8;
+.boton-editar {
+  background: #f39c12;
 }
 
-.btn-editar {
-  background: #FFC107;
-  color: black;
-}
 
-.loading {
+.estado-mensaje {
   text-align: center;
-  padding: 40px;
-  color: #7f8c8d;
-  font-size: 1.1rem;
+  padding: 30px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eee;
 }
 
 .error {
-  text-align: center;
-  padding: 20px;
   color: #e74c3c;
-  background: #fdf2f2;
-  border-radius: 4px;
-  border: 1px solid #f5c6cb;
-}
-
-.text-center {
-  text-align: center;
-  padding: 20px;
-  color: #7f8c8d;
-  font-style: italic;
 }
 </style>

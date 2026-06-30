@@ -1,11 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useStoreProducto } from '../stores/storeProducto'
 import { useAuthStore } from '../stores/authStore'
 
 const authStore = useAuthStore()
-const route = useRoute()
 const router = useRouter()
 const storeProducto = useStoreProducto()
 
@@ -46,36 +45,37 @@ const verDetalle = (id) => router.push(`/producto/${id}`)
 
 const desactivar = async (id) => {
   if (!confirm('¿Estás seguro de desactivar este producto?')) return
-  try {
-    await storeProducto.desactivarProducto(id)
-    await cargarProductos()
-  } catch (error) {
-    alert('Error al desactivar el producto')
-  }
+  await storeProducto.desactivarProducto(id)
+  await cargarProductos()
 }
 
 const reactivar = async (id) => {
   if (!confirm('¿Estás seguro de reactivar este producto?')) return
-  try {
-    await storeProducto.reactivarProducto(id)
-    await cargarProductos()
-  } catch (error) {
-    alert('Error al reactivar el producto')
-  }
+  await storeProducto.reactivarProducto(id)
+  await cargarProductos()
 }
 </script>
 
 <template>
-  <div class="admin-container">
-    <div class="header">
-      <h1>Gestión de Productos</h1>
-      <button @click="irACrear" class="btn-primary">+ Nuevo Producto</button>
+  <div class="contenedor-admin">
+    <h1 class="titulo-admin">Panel de Administración: Productos</h1>
+
+    <div class="barra-acciones">
+      <button @click="irACrear" class="boton boton-primario">
+        + Nuevo Producto
+      </button>
     </div>
 
-    <div v-if="cargando" class="loading">Cargando productos...</div>
-    <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else>
-      <table>
+    <div v-if="cargando" class="estado-mensaje">
+      Cargando productos...
+    </div>
+
+    <div v-else-if="error" class="estado-mensaje error">
+      {{ error }}
+    </div>
+
+    <div v-else class="tabla-contenedor">
+      <table class="tabla-admin">
         <thead>
           <tr>
             <th>ID</th>
@@ -87,41 +87,43 @@ const reactivar = async (id) => {
             <th>Acciones</th>
           </tr>
         </thead>
+
         <tbody>
           <tr v-for="producto in productos" :key="producto.id">
-            <td>{{ producto.id }}</td>
-            <td>{{ producto.nombre }}</td>
+            <td>#{{ producto.id }}</td>
+            <td class="nombre-destacado">{{ producto.nombre }}</td>
             <td>${{ producto.precio }}</td>
             <td>{{ producto.stock }}</td>
             <td>{{ producto.categoria?.nombre || 'Sin categoría' }}</td>
+
             <td>
-              <span :class="producto.habilitado ? 'badge-activo' : 'badge-inactivo'">
+              <span :class="['badge-estado', producto.habilitado ? 'activo' : 'inactivo']">
                 {{ producto.habilitado ? 'Activo' : 'Inactivo' }}
               </span>
             </td>
-            <td class="acciones">
-              <button @click="verDetalle(producto.id)" class="btn-ver" title="Ver">👁️</button>
-              <button @click="irAEditar(producto.id)" class="btn-editar" title="Editar">✏️</button>
+
+            <td class="acciones-tabla">
+              <button class="boton-accion boton-ver" @click="verDetalle(producto.id)">👁️</button>
+              <button class="boton-accion boton-editar" @click="irAEditar(producto.id)">✏️</button>
+
               <button
                 v-if="producto.habilitado"
+                class="boton-accion boton-eliminar"
                 @click="desactivar(producto.id)"
-                class="btn-desactivar"
-                title="Desactivar"
-              >
-                ⛔
-              </button>
+              >⛔</button>
+
               <button
                 v-else
+                class="boton-accion boton-exito"
                 @click="reactivar(producto.id)"
-                class="btn-reactivar"
-                title="Reactivar"
-              >
-                ✅
-              </button>
+              >✅</button>
             </td>
           </tr>
+
           <tr v-if="productos.length === 0">
-            <td colspan="7" class="text-center">No hay productos registrados.</td>
+            <td colspan="7" class="estado-mensaje">
+              No hay productos registrados.
+            </td>
           </tr>
         </tbody>
       </table>
@@ -130,144 +132,114 @@ const reactivar = async (id) => {
 </template>
 
 <style scoped>
-.admin-container {
-  padding: 20px;
+.contenedor-admin {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 40px auto;
+  padding: 0 20px;
+  color: #2b2b2b;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.titulo-admin {
+  font-size: 34px;
+  font-weight: 800;
+  color: #e60000;
+  margin-bottom: 25px;
+  border-bottom: 3px solid #333;
+  padding-bottom: 12px;
+}
+
+.barra-acciones {
   margin-bottom: 20px;
 }
 
-.header h1 {
-  margin: 0;
-  color: #2c3e50;
+.boton {
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
 }
 
-.btn-primary {
+.boton-primario {
   background: #4CAF50;
   color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  transition: background 0.3s;
+}
+.boton-primario:hover { background: #45a049; }
+
+.tabla-contenedor {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #eaeaea;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-.btn-primary:hover {
-  background: #45a049;
-}
-
-table {
+.tabla-admin {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-th, td {
-  border: 1px solid #ddd;
-  padding: 12px 15px;
-  text-align: left;
+.tabla-admin th {
+  background: #f8f9fa;
+  padding: 14px;
+  text-transform: uppercase;
+  font-size: 13px;
+  border-bottom: 2px solid #eee;
 }
 
-th {
-  background-color: #f2f2f2;
-  font-weight: bold;
-  color: #333;
+.tabla-admin td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
 }
 
-tbody tr:hover {
-  background-color: #f9f9f9;
+.nombre-destacado {
+  font-weight: 700;
 }
 
-.badge-activo {
-  color: #27ae60;
-  font-weight: bold;
-  background: #eafaf1;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  
-}
-
-.badge-inactivo {
-  color: #e74c3c;
-  font-weight: bold;
-  background: #fdf2f2;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-}
-
-.acciones {
+.acciones-tabla {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.acciones button {
-  padding: 6px 10px;
+.boton-accion {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: bold;
-  transition: opacity 0.2s;
-}
-
-.acciones button:hover {
-  opacity: 0.8;
-}
-
-.btn-ver {
-  background: #3498db;
   color: white;
 }
 
-.btn-editar {
-  background: #f39c12;
-  color: white;
+.boton-ver { background: #3498db; }
+.boton-editar { background: #f39c12; }
+.boton-eliminar { background: #e74c3c; }
+.boton-exito { background: #2ecc71; }
+
+.badge-estado {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.btn-desactivar {
-  background: #e74c3c;
-  color: white;
+.badge-estado.activo {
+  background: #eafaf1;
+  color: #27ae60;
 }
 
-.btn-reactivar {
-  background: #2ecc71;
-  color: white;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #7f8c8d;
-  font-size: 1.1rem;
-}
-
-.error {
-  text-align: center;
-  padding: 20px;
-  color: #e74c3c;
+.badge-estado.inactivo {
   background: #fdf2f2;
-  border-radius: 4px;
-  border: 1px solid #f5c6cb;
+  color: #e74c3c;
 }
 
-.text-center {
+.estado-mensaje {
   text-align: center;
-  padding: 20px;
-  color: #7f8c8d;
-  font-style: italic;
+  padding: 30px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+.error {
+  color: #e74c3c;
 }
 </style>

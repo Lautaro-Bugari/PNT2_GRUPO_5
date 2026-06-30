@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useStorePromos } from '../stores/storePromos'
 import { useAuthStore } from '../stores/authStore'
+
 const authStore = useAuthStore()
 const router = useRouter()
 const storePromos = useStorePromos()
-const route = useRoute()
+
 const promociones = ref([])
 const cargando = ref(true)
 const error = ref('')
@@ -38,90 +39,93 @@ onMounted(async () => {
   await cargarPromociones()
 })
 
-
 const irACrear = () => router.push('/promocion/nuevo')
 const irAEditar = (id) => router.push(`/promocion/editar/${id}`)
 const verDetalle = (id) => router.push(`/promociones/${id}`)
 
 const desactivar = async (id) => {
   if (!confirm('¿Desactivar esta promoción?')) return
-  try {
-    await storePromos.desactivarPromocion(id)
-    await cargarPromociones()
-  } catch (error) {
-    alert('Error al desactivar')
-  }
+  await storePromos.desactivarPromocion(id)
+  await cargarPromociones()
 }
 
 const reactivar = async (id) => {
-  try {
-    await storePromos.reactivarPromocion(id)
-    await cargarPromociones()
-  } catch (error) {
-    alert('Error al reactivar')
-  }
+  if (!confirm('¿Reactivar esta promoción?')) return
+  await storePromos.reactivarPromocion(id)
+  await cargarPromociones()
 }
 </script>
 
 <template>
-  <div class="admin-container">
-    <div class="header">
-      <h1>Gestión de Promociones</h1>
-      <button class="btn-primary" @click="irACrear">+ Nueva Promoción</button>
+  <div class="contenedor-admin">
+    <h1 class="titulo-admin">Panel de Administración: Promociones</h1>
+
+    <div class="barra-acciones">
+      <button class="boton boton-primario" @click="irACrear">
+        + Nueva Promoción
+      </button>
     </div>
 
-    <div v-if="cargando" class="loading">Cargando...</div>
-    <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else>
-      <table>
+    <div v-if="cargando" class="estado-mensaje">
+      Cargando promociones...
+    </div>
+
+    <div v-else-if="error" class="estado-mensaje error">
+      {{ error }}
+    </div>
+
+    <div v-else class="tabla-contenedor">
+      <table class="tabla-admin">
         <thead>
           <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Precio</th>
             <th>Descuento</th>
-            <th>Fecha Salida</th>
-            <th>Fecha Fin</th>
+            <th>Inicio</th>
+            <th>Fin</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
+
         <tbody>
           <tr v-for="promo in promociones" :key="promo.id">
-            <td>{{ promo.id }}</td>
-            <td>{{ promo.nombre }}</td>
+            <td>#{{ promo.id }}</td>
+            <td class="nombre-destacado">{{ promo.nombre }}</td>
             <td>${{ promo.precio }}</td>
             <td>{{ promo.descuento || 0 }}%</td>
             <td>{{ new Date(promo.fechaSalida).toLocaleDateString() }}</td>
             <td>{{ new Date(promo.fechaFin).toLocaleDateString() }}</td>
+
             <td>
-              <span :class="promo.habilitado ? 'badge-activo' : 'badge-inactivo'">
+              <span :class="['badge-estado', promo.habilitado ? 'activo' : 'inactivo']">
                 {{ promo.habilitado ? 'Activa' : 'Inactiva' }}
               </span>
             </td>
-            <td class="acciones">
-              <button @click="verDetalle(promo.id)" class="btn-ver" title="Ver">👁️</button>
-              <button @click="irAEditar(promo.id)" class="btn-editar" title="Editar">✏️</button>
+
+            <td class="acciones-tabla">
+              <button class="boton-accion boton-ver" @click="verDetalle(promo.id)">👁️</button>
+              <button class="boton-accion boton-editar" @click="irAEditar(promo.id)">✏️</button>
+
               <button
                 v-if="promo.habilitado"
+                class="boton-accion boton-eliminar"
                 @click="desactivar(promo.id)"
-                class="btn-desactivar"
-                title="Desactivar"
-              >
-                ⛔
-              </button>
+              >⛔</button>
+
               <button
                 v-else
+                class="boton-accion boton-exito"
                 @click="reactivar(promo.id)"
-                class="btn-reactivar"
-                title="Reactivar"
-              >
-                ✅
-              </button>
+              >✅</button>
             </td>
           </tr>
+
           <tr v-if="promociones.length === 0">
-            <td colspan="8" class="text-center">No hay promociones registradas.</td>
+            <td colspan="8" class="estado-mensaje">
+              No hay promociones registradas.
+            </td>
           </tr>
         </tbody>
       </table>
@@ -130,90 +134,115 @@ const reactivar = async (id) => {
 </template>
 
 <style scoped>
-.admin-container {
-  padding: 20px;
+
+.contenedor-admin {
   max-width: 1200px;
-  margin: 0 auto;
-}
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.btn-primary {
-  background: #4CAF50;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  transition: background 0.3s;
+  margin: 40px auto;
+  padding: 0 20px;
+  color: #2b2b2b;
 }
 
-.btn-primary:hover {
-  background: #45a049;
+.titulo-admin {
+  font-size: 34px;
+  font-weight: 800;
+  color: #e60000;
+  margin-bottom: 25px;
+  border-bottom: 3px solid #333;
+  padding-bottom: 12px;
 }
-table {
+
+.barra-acciones {
+  margin-bottom: 20px;
+}
+
+.boton {
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.boton-primario {
+  background: #4CAF50;
+  color: white;
+}
+.boton-primario:hover { background: #45a049; }
+
+.tabla-contenedor {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #eaeaea;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.tabla-admin {
   width: 100%;
   border-collapse: collapse;
 }
-th, td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
-}
-th {
-  background: #f2f2f2;
+
+.tabla-admin th {
+  background: #f8f9fa;
+  padding: 14px;
+  text-transform: uppercase;
+  font-size: 13px;
+  border-bottom: 2px solid #eee;
 }
 
-.badge-activo {
-  color: #27ae60;
-  font-weight: bold;
-  background: #eafaf1;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+.tabla-admin td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
 }
-.badge-inactivo {
-  color: #e74c3c;
-  font-weight: bold;
-  background: #fdf2f2;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+
+.nombre-destacado {
+  font-weight: 700;
 }
-.acciones button {
-  margin: 0 4px;
-  padding: 5px 8px;
+
+.acciones-tabla {
+  display: flex;
+  gap: 8px;
+}
+
+.boton-accion {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-}
-.btn-ver {
-  background: #2196F3;
   color: white;
 }
-.btn-editar {
-  background: #FFC107;
-  color: black;
+
+.boton-ver { background: #3498db; }
+.boton-editar { background: #f39c12; }
+.boton-eliminar { background: #e74c3c; }
+.boton-exito { background: #2ecc71; }
+
+.badge-estado {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
 }
-.btn-desactivar {
-  background: #f44336;
-  color: white;
+
+.badge-estado.activo {
+  background: #eafaf1;
+  color: #27ae60;
 }
-.btn-reactivar {
-  background: #4CAF50;
-  color: white;
+
+.badge-estado.inactivo {
+  background: #fdf2f2;
+  color: #e74c3c;
 }
-.loading,
+
+.estado-mensaje {
+  text-align: center;
+  padding: 30px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
 .error {
-  text-align: center;
-  padding: 20px;
-}
-.text-center {
-  text-align: center;
+  color: #e74c3c;
 }
 </style>
