@@ -2,15 +2,12 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStorePromos } from '../stores/storePromos'
-import { useStoreCarrito } from '../stores/storeCarrito'
-import { useAuthStore } from '../stores/authStore'
 import AvisoLogin from './AvisoLogin.vue'
+import BotonCarrito from './BotonCarrito.vue'
 
 const route = useRoute()
 const router = useRouter()
 const storePromos = useStorePromos()
-const storeCarrito = useStoreCarrito()
-const authStore = useAuthStore()
 
 const promocion = ref(null)
 const cargando = ref(true)
@@ -36,7 +33,9 @@ onMounted(async () => {
 
 const stockDisponible = computed(() => {
   if (!promocion.value?.productosIncluidos) return false
-  return promocion.value.productosIncluidos.every(p => p.stock > 0 && p.habilitado)
+  return promocion.value.productosIncluidos.every(
+    p => p.stock > 0 && p.habilitado
+  )
 })
 
 const sePuedeAgregar = computed(() => {
@@ -44,14 +43,8 @@ const sePuedeAgregar = computed(() => {
   return stockDisponible.value && promocion.value.habilitado
 })
 
-const agregarAlCarrito = () => {
-  if (!sePuedeAgregar.value) return
-
-  if (!authStore.usuarioLogueado) {
-    avisoLoginVisible.value = true
-    return
-  }
-  storeCarrito.agregarAlCarrito(promocion.value)
+const manejarLoginRequerido = () => {
+  avisoLoginVisible.value = true
 }
 
 const irALogin = () => {
@@ -66,56 +59,145 @@ const irALogin = () => {
 
 <template>
   <div class="contenedor-detalle-promo">
-    <AvisoLogin 
+
+    <AvisoLogin
       v-if="avisoLoginVisible"
       @cerrar="avisoLoginVisible = false"
       @login="irALogin"
     />
-    <div v-if="promocion" class="tarjeta-promo-detalle">
-      <h1 class="titulo-promo">{{ promocion.nombre }}</h1>
+
+    <div
+      v-if="promocion"
+      class="tarjeta-promo-detalle"
+    >
+
+      <h1 class="titulo-promo">
+        {{ promocion.nombre }}
+      </h1>
+
       <div class="seccion-info">
-        <p class="descripcion-promo"><strong>Descripción:</strong> {{ promocion.descripcion }}</p>
+
+        <p class="descripcion-promo">
+          <strong>Descripción:</strong>
+          {{ promocion.descripcion }}
+        </p>
+
         <div class="bloque-precios">
+
           <div class="precio-contenedor">
-            <span v-if="promocion.descuento && promocion.descuento > 0" class="precio-original">
+
+            <span
+              v-if="promocion.descuento && promocion.descuento > 0"
+              class="precio-original"
+            >
               ${{ promocion.precio }}
             </span>
+
             <span class="precio-final">
               ${{ promocion.precioFinal || promocion.precio }}
             </span>
+
           </div>
-          <p v-if="promocion.descuento && promocion.descuento > 0" class="porcentaje-descuento">
-            <strong>Descuento:</strong> <span class="tag-rojo">{{ promocion.descuento }}% OFF</span>
+
+          <p
+            v-if="promocion.descuento && promocion.descuento > 0"
+            class="porcentaje-descuento"
+          >
+            <strong>Descuento:</strong>
+
+            <span class="tag-rojo">
+              {{ promocion.descuento }}% OFF
+            </span>
           </p>
+
         </div>
-        <p class="categorias-promo"><strong>Categorías:</strong>
-          <span v-for="(cat, idx) in promocion.categorias" :key="idx" class="badge-categoria">
-            {{ cat.nombre }}<span v-if="idx < promocion.categorias.length - 1">, </span>
+
+        <p class="categorias-promo">
+          <strong>Categorías:</strong>
+
+          <span
+            v-for="(cat, idx) in promocion.categorias"
+            :key="idx"
+            class="badge-categoria"
+          >
+            {{ cat.nombre }}
+            <span v-if="idx < promocion.categorias.length - 1">, </span>
           </span>
         </p>
+
       </div>
+
       <div class="seccion-productos">
+
         <h3>Productos incluidos:</h3>
+
         <ul class="lista-productos-incluidos">
-          <li v-for="p in promocion.productosIncluidos" :key="p.id" class="item-producto-incluido">
-            <span class="nombre-p-inc">🍬 {{ p.nombre }}</span> 
-            <span class="cantidad-p-inc">x{{ p.PromoProducto?.cantidad || 1 }}</span> 
-            <span class="stock-p-inc">| Stock: {{ p.stock }}</span>
-            <span v-if="p.stock <= 0" class="tag-sin-stock">🚫 Sin stock</span>
+
+          <li
+            v-for="p in promocion.productosIncluidos"
+            :key="p.id"
+            class="item-producto-incluido"
+          >
+
+            <span class="nombre-p-inc">
+              🍬 {{ p.nombre }}
+            </span>
+
+            <span class="cantidad-p-inc">
+              x{{ p.PromoProducto?.cantidad || 1 }}
+            </span>
+
+            <span class="stock-p-inc">
+              | Stock: {{ p.stock }}
+            </span>
+
+            <span
+              v-if="p.stock <= 0"
+              class="tag-sin-stock"
+            >
+              🚫 Sin stock
+            </span>
+
           </li>
+
         </ul>
+
       </div>
-      <button 
-        @click="agregarAlCarrito" 
-        :disabled="!sePuedeAgregar"
-        class="btn-accion-promo"
-        :class="{ 'btn-deshabilitado': !sePuedeAgregar }"
-      >
-        {{ sePuedeAgregar ? '🛒 Agregar promoción al carrito' : '🚫 No disponible' }}
-      </button>
+
+      <div class="acciones-promo">
+
+        <BotonCarrito
+          v-if="sePuedeAgregar"
+          :producto="promocion"
+          @login-required="manejarLoginRequerido"
+        />
+
+        <button
+          v-else
+          class="btn-accion-promo"
+          disabled
+        >
+          🚫 No disponible
+        </button>
+
+      </div>
+
     </div>
-    <div v-else-if="cargando" class="estado-mensaje cargando">Cargando detalles del combo...</div>
-    <div v-else-if="error" class="estado-mensaje error">⚠️ {{ error }}</div>
+
+    <div
+      v-else-if="cargando"
+      class="estado-mensaje cargando"
+    >
+      Cargando detalles del combo...
+    </div>
+
+    <div
+      v-else-if="error"
+      class="estado-mensaje error"
+    >
+      ⚠️ {{ error }}
+    </div>
+
   </div>
 </template>
 
@@ -188,35 +270,30 @@ const irALogin = () => {
 .porcentaje-descuento {
   font-size: 16px;
   color: #555;
-  margin: 8px 0 0 0;
+  margin-top: 10px;
 }
 
 .tag-rojo {
   background-color: #e60000;
-  color: #fff;
+  color: white;
   padding: 3px 8px;
   border-radius: 4px;
-  font-weight: 700;
   font-size: 14px;
+  font-weight: 700;
 }
 
 .badge-categoria {
-  font-size: 15px;
-  color: #444;
   font-weight: 600;
 }
 
 .seccion-productos h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: #333;
   margin-bottom: 15px;
 }
 
 .lista-productos-incluidos {
   list-style: none;
   padding: 0;
-  margin: 0 0 35px 0;
+  margin-bottom: 35px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -225,95 +302,95 @@ const irALogin = () => {
 .item-producto-incluido {
   display: flex;
   align-items: center;
-  background-color: #ffffff;
   border: 1px solid #eee;
   border-left: 5px solid #333;
-  padding: 12px 18px;
   border-radius: 6px;
-  font-size: 15px;
+  padding: 12px 18px;
 }
 
 .nombre-p-inc {
+  flex: 1;
   font-weight: 600;
-  flex-grow: 1;
 }
 
 .cantidad-p-inc {
-  font-weight: 700;
   color: #e60000;
+  font-weight: 700;
   margin-right: 15px;
-  font-size: 16px;
 }
 
 .stock-p-inc {
-  color: #777;
-  font-size: 14px;
+  color: #666;
 }
 
 .tag-sin-stock {
-  background-color: #fff5f5;
-  color: #dc3545;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
   margin-left: 10px;
-  border: 1px solid #fdf2f2;
+  color: #dc3545;
+  font-weight: 700;
+}
+
+
+.acciones-promo {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.acciones-promo :deep(.boton-carrito-wrapper) {
+  width: 100%;
+}
+
+.acciones-promo :deep(.btn-agregar) {
+  width: 100%;
+  height: 48px;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.acciones-promo :deep(.control-cantidad) {
+  width: 100%;
+  justify-content: center;
+  gap: 20px;
+}
+
+.acciones-promo :deep(.btn-cantidad) {
+  width: 42px;
+  height: 42px;
+  font-size: 22px;
+}
+
+.acciones-promo :deep(.cantidad-texto) {
+  min-width: 30px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .btn-accion-promo {
   width: 100%;
-  padding: 15px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  background-color: #e60000;
+  height: 48px;
   border: none;
   border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  box-shadow: 0 4px 12px rgba(230, 0, 0, 0.15);
-}
-
-.btn-accion-promo:hover:not(:disabled) {
-  background-color: #c90000;
-}
-
-.btn-accion-promo:active:not(:disabled) {
-  transform: scale(0.99);
-}
-
-.btn-accion-promo:disabled {
-  background-color: #cccccc;
-  color: #ffffff;
+  background: #cccccc;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
   cursor: not-allowed;
-  box-shadow: none;
-  border: none;
-}
-
-.btn-deshabilitado {
-  background-color: #cccccc;
-  color: #ffffff;
-  cursor: not-allowed;
-  box-shadow: none;
 }
 
 .estado-mensaje {
   text-align: center;
   padding: 40px;
-  font-size: 16px;
-  font-weight: 500;
   border-radius: 8px;
 }
 
 .cargando {
-  color: #666;
-  background-color: #f9f9f9;
+  background: #f8f9fa;
 }
 
 .error {
   color: #b52a37;
-  background-color: #fff5f5;
+  background: #fff5f5;
   border: 1px solid #f8d7da;
 }
 </style>

@@ -127,52 +127,51 @@ const decrementar = async () => {
 
 <style scoped>
 .boton-carrito-wrapper {
-  display: inline-block;
+  flex: 1;
+  display: flex;
 }
+
 .btn-agregar {
-  padding: 10px 16px;
-  font-size: 14px;
+  width: 100%;
+  height: 46px;
+  padding: 0 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: #fff;
-  background-color: #e60000;
+  color: white;
+  background: #e60000;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: .2s;
 }
+
 .btn-agregar:hover {
-  background-color: #c90000;
+  background: #c90000;
 }
+
 .control-cantidad {
+  width: 100%;
+  height: 46px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
 }
+
 .btn-cantidad {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1px solid #ccc;
-  background-color: #f5f5f5;
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
+  background: #f5f5f5;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
+  font-size: 18px;
+  font-weight: bold;
 }
-.btn-cantidad:hover:not(:disabled) {
-  background-color: #ddd;
-}
-.btn-cantidad:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+
 .cantidad-texto {
-  min-width: 20px;
+  flex: 1;
   text-align: center;
+  font-size: 17px;
   font-weight: 600;
 }
 </style>

@@ -2,15 +2,16 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStoreProducto } from '../stores/storeProducto'
-import { useStoreCarrito } from '../stores/storeCarrito'
-import { useAuthStore } from '../stores/authStore'
+/* import { useStoreCarrito } from '../stores/storeCarrito'
+import { useAuthStore } from '../stores/authStore' */
 import AvisoLogin from './AvisoLogin.vue'
+import BotonCarrito from './BotonCarrito.vue'
 
 const route = useRoute()
 const router = useRouter()
 const storeProducto = useStoreProducto()
-const storeCarrito = useStoreCarrito()
-const authStore = useAuthStore()
+/* const storeCarrito = useStoreCarrito()
+const authStore = useAuthStore() */
 
 const producto = ref(null)
 const cargando = ref(true)
@@ -34,16 +35,9 @@ onMounted(async () => {
   }
 })
 
-const agregarAlCarrito = () => {
-  if (producto.value.stock <= 0 || !producto.value.habilitado) return
-
-  if (!authStore.usuarioLogueado) {
-    avisoLoginVisible.value = true
-    return
-  }
-  storeCarrito.agregarAlCarrito(producto.value)
+const manejarLoginRequerido = () => {
+  avisoLoginVisible.value = true
 }
-
 
 const irALogin = () => {
   router.push({
@@ -57,33 +51,89 @@ const irALogin = () => {
 
 <template>
   <div class="contenedor-detalle-producto">
-    <AvisoLogin 
+
+    <AvisoLogin
       v-if="avisoLoginVisible"
       @cerrar="avisoLoginVisible = false"
       @login="irALogin"
     />
+
     <div v-if="producto" class="tarjeta-producto-detalle">
-      <h1 class="titulo-producto">{{ producto.nombre }}</h1>
+
+      <h1 class="titulo-producto">
+        {{ producto.nombre }}
+      </h1>
+
       <div class="seccion-info">
-        <p class="descripcion-producto"><strong>Descripción:</strong> {{ producto.descripcion }}</p>
-        <div class="bloque-costos">
-          <p class="precio-producto"><strong>Precio:</strong> <span class="monto-precio">${{ producto.precio }}</span></p>
-          <p class="stock-producto"><strong>Stock:</strong> <span :class="{ 'sin-stock': producto.stock <= 0 }">{{ producto.stock }} unidades</span></p>
-        </div>
-        <p class="categoria-producto"><strong>Categoría:</strong> 
-          <span class="badge-categoria">{{ producto.categoria?.nombre || 'Sin categoría' }}</span>
+
+        <p class="descripcion-producto">
+          <strong>Descripción:</strong>
+          {{ producto.descripcion }}
         </p>
+
+        <div class="bloque-costos">
+
+          <p class="precio-producto">
+            <strong>Precio:</strong>
+            <span class="monto-precio">
+              ${{ producto.precio }}
+            </span>
+          </p>
+
+          <p class="stock-producto">
+            <strong>Stock:</strong>
+
+            <span :class="{ 'sin-stock': producto.stock <= 0 }">
+              {{ producto.stock }} unidades
+            </span>
+          </p>
+
+        </div>
+
+        <p class="categoria-producto">
+          <strong>Categoría:</strong>
+
+          <span class="badge-categoria">
+            {{ producto.categoria?.nombre || 'Sin categoría' }}
+          </span>
+        </p>
+
       </div>
-      <button 
-        @click="agregarAlCarrito" 
-        :disabled="producto.stock <= 0 || !producto.habilitado"
-        class="btn-accion-producto"
-      >
-        {{ (producto.stock > 0 && producto.habilitado) ? '🛒 Agregar al carrito' : '🚫 No disponible' }}
-      </button>
+
+      <div class="acciones-producto">
+
+        <BotonCarrito
+          v-if="producto.stock > 0 && producto.habilitado"
+          :producto="producto"
+          @login-required="manejarLoginRequerido"
+        />
+
+        <button
+          v-else
+          class="btn-accion-producto"
+          disabled
+        >
+          🚫 No disponible
+        </button>
+
+      </div>
+
     </div>
-    <div v-else-if="cargando" class="estado-mensaje cargando">Cargando detalles del producto...</div>
-    <div v-else-if="error" class="estado-mensaje error">{{ error }}</div>
+
+    <div
+      v-else-if="cargando"
+      class="estado-mensaje cargando"
+    >
+      Cargando detalles del producto...
+    </div>
+
+    <div
+      v-else-if="error"
+      class="estado-mensaje error"
+    >
+      {{ error }}
+    </div>
+
   </div>
 </template>
 
@@ -147,7 +197,6 @@ const irALogin = () => {
   font-size: 26px;
   font-weight: 800;
   color: #e60000;
-  vertical-align: middle;
   margin-left: 5px;
 }
 
@@ -172,33 +221,54 @@ const irALogin = () => {
   font-weight: 600;
 }
 
+
+.acciones-producto {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.acciones-producto :deep(.boton-carrito-wrapper) {
+  width: 100%;
+}
+
+.acciones-producto :deep(.btn-agregar) {
+  width: 100%;
+  height: 48px;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.acciones-producto :deep(.control-cantidad) {
+  width: 100%;
+  justify-content: center;
+  gap: 20px;
+}
+
+.acciones-producto :deep(.btn-cantidad) {
+  width: 42px;
+  height: 42px;
+  font-size: 22px;
+}
+
+.acciones-producto :deep(.cantidad-texto) {
+  min-width: 30px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+
 .btn-accion-producto {
   width: 100%;
+  height: 48px;
   padding: 15px;
   font-size: 16px;
   font-weight: 700;
   color: #fff;
-  background-color: #e60000;
+  background-color: #cccccc;
   border: none;
   border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  box-shadow: 0 4px 12px rgba(230, 0, 0, 0.15);
-}
-
-.btn-accion-producto:hover:not(:disabled) {
-  background-color: #c90000;
-}
-
-.btn-accion-producto:active:not(:disabled) {
-  transform: scale(0.99);
-}
-
-.btn-accion-producto:disabled {
-  background-color: #cccccc;
-  color: #ffffff;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
 .estado-mensaje {

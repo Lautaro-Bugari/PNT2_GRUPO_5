@@ -1,15 +1,16 @@
 <script setup>
 import { ref, computed, onMounted } from "vue"
-import { useStoreCarrito } from "../stores/storeCarrito"
+/* import { useStoreCarrito } from "../stores/storeCarrito" */
 import AvisoLogin from "./AvisoLogin.vue"
-import { useAuthStore } from '../stores/authStore'
+/* import { useAuthStore } from '../stores/authStore' */
 import { useRouter } from 'vue-router'
 import { useStoreProducto } from "../stores/storeProducto"
+import BotonCarrito from "./BotonCarrito.vue"
 
 const storeProducto = useStoreProducto()
 const router = useRouter()
-const authStore = useAuthStore()
-const storeCarrito = useStoreCarrito()
+/* const authStore = useAuthStore()
+const storeCarrito = useStoreCarrito() */
 
 const productos = ref([])
 const busqueda = ref("")
@@ -47,14 +48,14 @@ const productosFiltrados = computed(() => {
   })
 })
 
-const verificarLogin = (producto) => {
+/* const verificarLogin = (producto) => {
   if (!authStore.usuarioLogueado) {
     productoSeleccionado = producto
     avisoLoginVisible.value = true
     return
   }
   storeCarrito.agregarAlCarrito(producto)
-}
+} */
 
 const irADetalle = (producto) => {
   const esPromocion = producto.productosIncluidos && producto.productosIncluidos.length > 0
@@ -79,6 +80,11 @@ const irALogin = () => {
       redirect: ruta
     }
   })
+}
+
+const manejarLoginRequerido = (producto) => {
+  productoSeleccionado = producto
+  avisoLoginVisible.value = true
 }
 </script>
 
@@ -120,10 +126,10 @@ const irALogin = () => {
             <span class="precio-producto">${{ producto.precio }}</span>
           </div>
           
-          <div class="acciones-producto">
-            <button @click="verificarLogin(producto)" class="btn-carrito">🛒 Agregar al carrito</button>
-            <button @click="irADetalle(producto)" class="btn-detalle">🔍 Ver detalles</button>
-          </div>
+          <div class="tarjeta-acciones">
+          <BotonCarrito :producto="producto" @login-required="manejarLoginRequerido(producto)" />
+          <button class="btn btn-secondary" @click="irADetalle(producto)">🔍 Ver detalles</button>
+        </div>
         </div>
       </div>
     </div>
@@ -158,7 +164,7 @@ const irALogin = () => {
   font-size: 15px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color .2s, box-shadow .2s;
 }
 
 .select-categoria {
@@ -166,43 +172,44 @@ const irALogin = () => {
   font-size: 15px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  background-color: #fff;
+  background: #fff;
   cursor: pointer;
   min-width: 180px;
 }
 
-.input-busqueda:focus, .select-categoria:focus {
+.input-busqueda:focus,
+.select-categoria:focus {
   outline: none;
   border-color: #e60000;
-  box-shadow: 0 0 0 3px rgba(230, 0, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(230,0,0,.1);
 }
 
 .grilla-productos {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
   gap: 30px;
 }
 
 .tarjeta-producto {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #eaeaea;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 10px rgba(0,0,0,.03);
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: .2s;
 }
 
 .tarjeta-producto:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 15px rgba(0,0,0,.08);
 }
 
 .contenedor-imagen {
   width: 100%;
   height: 220px;
-  background-color: #f8f9fa;
+  background: #f8f9fa;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,8 +233,7 @@ const irALogin = () => {
   font-size: 18px;
   font-weight: 700;
   color: #2b2b2b;
-  margin: 0 0 8px 0;
-  line-height: 1.3;
+  margin: 0 0 8px;
 }
 
 .categoria-producto {
@@ -235,8 +241,8 @@ const irALogin = () => {
   color: #777;
   text-transform: uppercase;
   font-weight: 600;
-  margin: 0 0 12px 0;
-  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  letter-spacing: .5px;
 }
 
 .precio-contenedor {
@@ -255,50 +261,40 @@ const irALogin = () => {
 
 .precio-producto {
   font-size: 22px;
-  color: #333;
   font-weight: 700;
+  color: #333;
 }
 
-.acciones-producto {
+.tarjeta-acciones {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
   margin-top: auto;
 }
 
-.btn-carrito {
-  width: 100%;
-  padding: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  background-color: #e60000;
+.tarjeta-acciones > * {
+  flex: 1;
+}
+
+.btn {
+  height: 46px;
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.btn-carrito:hover {
-  background-color: #c90000;
-}
-
-.btn-detalle {
-  width: 100%;
-  padding: 10px;
-  font-size: 14px;
+  border-radius: 8px;
+  font-size: 15px;
   font-weight: 600;
-  color: #444;
-  background-color: #f1f1f1;
-  border: 1px solid #ddd;
-  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: .2s;
 }
 
-.btn-detalle:hover {
-  background-color: #333;
-  color: #fff;
-  border-color: #333;
+.btn-secondary {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background: #dddddd;
 }
 </style>

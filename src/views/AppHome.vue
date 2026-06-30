@@ -3,8 +3,8 @@ import { ref, onMounted } from "vue"
 import { useStoreProducto } from "../stores/storeProducto"
 import { useStorePromos } from "../stores/storePromos"
 import AvisoLogin from "./AvisoLogin.vue"
-import { useAuthStore } from '../stores/authStore'
-import { useStoreCarrito } from "../stores/storeCarrito"
+/* import { useAuthStore } from '../stores/authStore'
+import { useStoreCarrito } from "../stores/storeCarrito" */
 import { useRouter } from 'vue-router'
 import BotonCarrito from "./BotonCarrito.vue"
 
@@ -14,8 +14,8 @@ const storeProducto = useStoreProducto()
 const storePromos = useStorePromos()
 const avisoLoginVisible = ref(false)
 let productoSeleccionado = null 
-const authStore = useAuthStore()
-const storeCarrito = useStoreCarrito()
+/* const authStore = useAuthStore()
+const storeCarrito = useStoreCarrito() */
 const router = useRouter()
 
 onMounted(async () => {
@@ -230,8 +230,13 @@ const manejarLoginRequerido = (producto) => {
 
 .tarjeta-acciones {
   display: flex;
+  align-items: center;
   gap: 12px;
   margin-top: auto;
+}
+
+.tarjeta-acciones > * {
+  flex: 1;
 }
 
 .btn {
@@ -247,9 +252,11 @@ const manejarLoginRequerido = (producto) => {
 }
 
 .btn-secondary {
-  background-color: #f0f0f0;
-  color: #333333;
-  flex: 1;
+  height: 46px;
+  background: #f0f0f0;
+  color: #333;
+  border-radius: 8px;
+  font-weight: 600;
 }
 
 .btn-secondary:hover {
