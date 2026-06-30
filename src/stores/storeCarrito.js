@@ -11,7 +11,10 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
   const carrito = ref([])
   const carritoId = ref(null)
 
- const agregarAlCarrito = async (producto) => {
+  const toastVisible = ref(false)
+  const toastMensaje = ref('')
+
+const agregarAlCarrito = async (producto) => {
       const storeProducto = useStoreProducto()
       const storePromos = useStorePromos()
 
@@ -71,9 +74,16 @@ export const useStoreCarrito = defineStore("storeCarrito", () => {
       cantidad: 1
     })
   }
-
+  const nombre = producto.nombre || productoCompleto.nombre || 'Producto'
+    toastMensaje.value = `¡Éxito! Se sumó "${nombre}" al carrito.`
+    toastVisible.value = true
+    setTimeout(() => {
+      toastVisible.value = false
+    }, 3000)
   await guardarCarrito()
 }
+
+
 
   const guardarCarrito = async () => {
     if (!carritoId.value) return
@@ -162,7 +172,9 @@ return {
   limpiarCarrito,
   getCantidadTotal,
   obtenerTodosLosCarritos,
-  eliminarProducto
+  eliminarProducto,
+  toastVisible,
+  toastMensaje
 }
 
 })
